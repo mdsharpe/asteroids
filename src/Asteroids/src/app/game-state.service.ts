@@ -83,13 +83,15 @@ export class GameStateService {
             .configureLogging(LogLevel.Information)
             .build();
 
-        connection.on('newAsteroid', (asteroid) => this.createAsteroid(asteroid));
+        connection.on('newAsteroid', (asteroid) =>
+            this.createAsteroid(asteroid)
+        );
         connection.on('playerMoved', (player) =>
             this.handleOtherPlayer(player)
         );
 
         connection.start().then(() => {
-            console.log("connectionstate: ", this._hubConnection.state);
+            console.log('connectionstate: ', this._hubConnection.state);
 
             //// Simulate locally other players
             this.spawnPlayer();
@@ -106,13 +108,12 @@ export class GameStateService {
     private _hubConnection: HubConnection;
 
     private initPlayer(isOtherPlayer: boolean): Body {
-        const collisionFilter: ICollisionFilter =
-            isOtherPlayer ? {
-                category: COLLISION_CAT_OTHERPLAYER,
-                mask: 0
-            }
-                :
-                { category: COLLISION_CAT_PLAYER };
+        const collisionFilter: ICollisionFilter = isOtherPlayer
+            ? {
+                  category: COLLISION_CAT_OTHERPLAYER,
+                  mask: 0,
+              }
+            : { category: COLLISION_CAT_PLAYER };
 
         var player = Bodies.rectangle(
             0,
@@ -192,7 +193,7 @@ export class GameStateService {
     }
 
     public handleOtherPlayer(otherPlayer: any) {
-        console.log("handle: ", otherPlayer);
+        console.log('handle: ', otherPlayer);
         if (otherPlayer.id != this.player.id) {
             if (this.otherPlayers.has(otherPlayer.id)) {
                 let existingPlayer = this.otherPlayers.get(otherPlayer.id);
@@ -201,7 +202,7 @@ export class GameStateService {
             } else {
                 const player = this.initPlayer(true);
                 this.otherPlayers.set(otherPlayer.id, player);
-                console.log("add player: ", otherPlayer.id);
+                console.log('add player: ', otherPlayer.id);
             }
         }
     }
@@ -276,20 +277,28 @@ export class GameStateService {
             }
 
             if (player.position.x < PLAYER_MINX) {
-                Body.setPosition(player, { x: PLAYER_MINX, y: player.position.y });
+                Body.setPosition(player, {
+                    x: PLAYER_MINX,
+                    y: player.position.y,
+                });
                 Body.setVelocity(player, { x: 0, y: 0 });
             }
 
             if (player.position.x > PLAYER_MAXX) {
-                Body.setPosition(player, { x: PLAYER_MAXX, y: player.position.y });
+                Body.setPosition(player, {
+                    x: PLAYER_MAXX,
+                    y: player.position.y,
+                });
                 Body.setVelocity(player, { x: 0, y: 0 });
             }
 
-            this._hubConnection.send('broadcastPlayer', {
-                id: this.player.id,
-                yPos: this.player.position.y,
-                xPos: this.player.position.x
-            });
+            if (this._hubConnection.state === 'Connected') {
+                this._hubConnection.send('broadcastPlayer', {
+                    id: this.player.id,
+                    yPos: this.player.position.y,
+                    xPos: this.player.position.x,
+                });
+            }
         };
 
         this._playerAlive$.subscribe((alive) => {
@@ -373,7 +382,6 @@ export class GameStateService {
             }
         );
 
-
         if (randomTexture === '.media/enable2.png') {
             Body.setVelocity(asteroid, {
                 x: -0.5,
@@ -440,10 +448,10 @@ export class GameStateService {
     }
 
     private spawnPlayer(): void {
-        console.log("Spawning");
+        console.log('Spawning');
         this._hubConnection.send('broadcastPlayer', {
             id: this.generateGuid(),
-            yPos: Math.random() * 50
+            yPos: Math.random() * 50,
         });
     }
 

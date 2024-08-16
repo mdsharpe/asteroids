@@ -75,8 +75,8 @@ export class GameStateService {
         var player = Bodies.rectangle(
             0,
             PLAYAREA_HEIGHT / 2 - PLAYER_HEIGHT / 2,
-            PLAYER_WIDTH,
-            PLAYER_HEIGHT,
+            PLAYER_HEIGHT, // Width set to height because we rotate after creation
+            PLAYER_WIDTH, // Height set to width because we rotate after creation
             {
                 frictionAir: PLAYER_VACUUMFRICTION,
                 collisionFilter: { category: COLLISION_CAT_PLAYER },
@@ -148,9 +148,8 @@ export class GameStateService {
     public handleOtherPlayer(otherPlayer: any) {
         if (this.otherPlayers.has(otherPlayer.id)) {
             let existingPlayer = this.otherPlayers.get(otherPlayer.id);
-            existingPlayer!.position.y = otherPlayer.yPos
-        }
-        else {
+            existingPlayer!.position.y = otherPlayer.yPos;
+        } else {
             const player = this.initPlayer(true);
             this.otherPlayers.set(otherPlayer.id, player);
         }

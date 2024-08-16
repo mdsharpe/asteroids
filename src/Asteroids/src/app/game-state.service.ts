@@ -8,18 +8,20 @@ export class GameStateService {
     public readonly player: Body;
 
     constructor() {
-        this.engine = Engine.create();
-        this.engine.gravity.y = 0;
+        this.engine = Engine.create({
+            gravity: { x: 0, y: 0 },
+        });
 
         this.runner = Runner.create();
         Runner.run(this.runner, this.engine);
 
         this.player = Bodies.rectangle(30, 45, 20, 10);
+        this.player.frictionAir = 0;
         Composite.add(this.engine.world, [this.player]);
 
         window.setInterval(() => {
-            var asteroid = Bodies.circle(400, 200, 30);
-            Body.setVelocity(asteroid, { x: -3, y: 2 });
+            var asteroid = Bodies.circle(400, 50, 10);
+            Body.setVelocity(asteroid, { x: -3, y: 0 });
             asteroid.frictionAir = 0;
 
             Composite.add(this.engine.world, [asteroid]);

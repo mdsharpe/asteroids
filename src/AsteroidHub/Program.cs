@@ -1,5 +1,6 @@
 using AsteroidHub;
 using AsteroidHub.Services;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,11 @@ builder.Services.AddHostedService<AsteroidGenerator>();
 
 builder.Services.AddSignalR();
 builder.Services.AddCors();
+builder.Services.AddApplicationInsightsTelemetry(
+    new ApplicationInsightsServiceOptions
+    {
+        ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"]
+    });
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -31,4 +31,6 @@ app.UseCors(o =>
 
 app.MapHub<AsteroidGameHub>("/hub");
 
+app.MapGet("ping", () => "pong");
+
 app.Run();

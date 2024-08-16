@@ -8,7 +8,7 @@ import {
     ViewChild,
 } from '@angular/core';
 import { Render } from 'matter-js';
-import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 
 import { GameStateService } from '../game-state.service';
 import { environment } from '../../environments/environment';
@@ -21,7 +21,24 @@ import { environment } from '../../environments/environment';
     styleUrl: './game-page.component.scss',
 })
 export class GamePageComponent implements OnInit, OnDestroy {
+    constructor() {
+        const connection = new HubConnectionBuilder()
+            .withUrl(`${environment.signalRBaseUri}/hub`)
+            .configureLogging(LogLevel.Information)
+            .build();
+
+        connection.on('newAsteroid', (_) => console.log('new asteroid'));
+        connection.on('playerMoved', (player) => this._state.handleOtherPlayer(player));
+
+        connection.start();
+
+        this._hubConnection = connection;
+        console.log("connectionstate: ", this._hubConnection.state);
+
+        this.spawnPlayer();
+    } 
     private readonly _state = inject(GameStateService);
+    private _hubConnection: HubConnection;
 
     private _render: Matter.Render | null = null;
 
@@ -42,8 +59,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         Render.run(this._render);
 
         this.fitToScreen();
-
-        await this.initSignalRConnection();
     }
 
     public ngOnDestroy(): void {
@@ -55,18 +70,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     @HostListener('window:resize', ['$event'])
     public onResize(evt: Event): void {
         this.fitToScreen();
-    }
-
-    // TODO [MW] Do this in game state service
-    private async initSignalRConnection(): Promise<void> {
-        const connection = new HubConnectionBuilder()
-            .withUrl(`${environment.signalRBaseUri}/hub`)
-            .configureLogging(LogLevel.Information)
-            .build();
-
-        connection.on('newAsteroid', (_) => console.log('new asteroid'));
-
-        connection.start();
     }
 
     private fitToScreen(): void {
@@ -127,5 +130,24 @@ export class GamePageComponent implements OnInit, OnDestroy {
         render.bounds.max.x -= padding.x;
         render.bounds.min.y -= padding.y;
         render.bounds.max.y -= padding.y;
+    }
+
+    private spawnPlayer(): void {
+        ////window.setInterval(() => {
+        ////    console.log("Spawning");
+        ////    this._hubConnection.send('broadcastPlayer', {
+        ////        id: this.generateGuid(),
+        ////        yPos: Math.random() * 5
+        ////    });
+        ////    this.spawnPlayer();
+        ////}, 5000);
+    }
+
+    private generateGuid(): string {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r: number = Math.random() * 16 | 0;
+            const v: number = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 }

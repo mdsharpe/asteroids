@@ -3,6 +3,8 @@ using AsteroidHub.Services;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
+Console.WriteLine("STARTUP");
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

@@ -15,6 +15,7 @@ import { BehaviorSubject } from 'rxjs';
 import { GamePhase } from './game-phase';
 import { environment } from '../environments/environment';
 import {
+    HttpTransportType,
     HubConnection,
     HubConnectionBuilder,
     LogLevel,
@@ -79,7 +80,11 @@ export class GameStateService {
         this.otherPlayers = new Map<string, Body>();
 
         const connection = new HubConnectionBuilder()
-            .withUrl(`${environment.signalRBaseUri}/hub`)
+            .withUrl(`${environment.signalRBaseUri}/hub`, {
+                skipNegotiation: false,
+                transport: HttpTransportType.WebSockets,
+                withCredentials: false
+            })
             .configureLogging(LogLevel.Information)
             .build();
 

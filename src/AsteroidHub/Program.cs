@@ -11,7 +11,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHostedService<AsteroidGenerator>();
 
 builder.Services.AddSignalR();
-builder.Services.AddCors();
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:4200", "https://delightful-hill-0a63cb603.5.azurestaticapps.net/")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddApplicationInsightsTelemetry(
     new ApplicationInsightsServiceOptions
     {
@@ -22,17 +32,11 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
 
-app.UseCors(o =>
-{
-    o.WithOrigins("http://localhost:4200", "https://delightful-hill-0a63cb603.5.azurestaticapps.net/");
-    //o.AllowAnyOrigin();
-    o.AllowAnyHeader();
-    o.AllowAnyMethod();
-    o.AllowCredentials();
-});
+app.UseCors();
 
 app.MapHub<AsteroidGameHub>("/hub");
 
 app.MapGet("ping", () => "pong");
+
 
 app.Run();

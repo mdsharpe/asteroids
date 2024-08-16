@@ -1,13 +1,9 @@
-﻿
-using System;
-using AsteroidHub.Models;
+﻿using AsteroidHub.Models;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace AsteroidHub.Services
 {
-    public class AsteroidGenerator(
-        IHubContext<AsteroidGameHub> hub) : BackgroundService
+    public class AsteroidGenerator(IHubContext<AsteroidGameHub> hub) : BackgroundService
     {
         private readonly Random _random = new Random();
 
@@ -57,7 +53,7 @@ namespace AsteroidHub.Services
             foreach (var asteroid in asteroids)
             {
                 await hub.Clients.All.SendAsync("newAsteroid", asteroid.Width, asteroid.Height, asteroid.VerticalPos, asteroid.HorizontalPos, asteroid.VelocityX, asteroid.VelocityY, stoppingToken);
-                // Console.WriteLine($"Asteroid = W:{asteroid.Width}, H:{asteroid.Height}, VPos:{asteroid.VerticalPos}, HPos:{asteroid.HorizontalPos}, VX:{asteroid.VelocityX}, VY:{asteroid.VelocityY}");
+                Console.WriteLine($"Asteroid = W:{asteroid.Width}, H:{asteroid.Height}, VPos:{asteroid.VerticalPos}, HPos:{asteroid.HorizontalPos}, VX:{asteroid.VelocityX}, VY:{asteroid.VelocityY}");
             }
         }
     }

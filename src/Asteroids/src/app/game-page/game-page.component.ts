@@ -16,12 +16,9 @@ import {
 
 import { GameStateService } from '../game-state.service';
 import { environment } from '../../environments/environment';
-<<<<<<< HEAD
 import { AsteroidSignalRModel } from '../models';
-=======
 import { CommonModule } from '@angular/common';
 import { distinctUntilChanged, map } from 'rxjs';
->>>>>>> e805c91 (hackathon)
 
 @Component({
     selector: 'app-game-page',

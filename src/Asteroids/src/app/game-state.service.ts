@@ -26,6 +26,8 @@ const PLAYER_VACUUMFRICTION = 0.1;
 const PLAYER_VACUUMFRICTION_DEAD = 0.02;
 const PLAYER_ACCEL = 0.00005;
 
+const ASTEROID_WIDTH = 5;
+
 const STAR_COUNT = 750;
 const STAR_WIDTH = 0.2;
 const STAR_DEPTH_MIN = 0;
@@ -224,30 +226,44 @@ export class GameStateService {
             './media/asteroid4.svg',
             './media/asteroid5.svg',
         ];
-        const randomTexture = asteroidTextures[Math.floor(Math.random() * asteroidTextures.length)];
+        const randomTexture =
+            asteroidTextures[
+                Math.floor(Math.random() * asteroidTextures.length)
+            ];
 
         // Set default scales
         let xScale = 0.1;
         let yScale = 0.1;
 
-        const asteroid = Bodies.circle(150, Math.random() * 100, 10, {
-            frictionAir: 0,
-            collisionFilter: {
-                category: COLLISION_CAT_ASTEROID,
-            },
-            render: {
-                sprite: {
-                    texture: randomTexture,
-                    xScale: xScale,
-                    yScale: yScale,
-                }
+        const asteroid = Bodies.circle(
+            150,
+            Math.random() * 100,
+            ASTEROID_WIDTH,
+            {
+                frictionAir: 0,
+                collisionFilter: {
+                    category: COLLISION_CAT_ASTEROID,
+                },
+                render: {
+                    sprite: {
+                        texture: randomTexture,
+                        xScale: xScale,
+                        yScale: yScale,
+                    },
+                },
             }
-        });
+        );
 
-        Body.setVelocity(asteroid, {
-            x: Math.random() * -1 - 1,
-            y: Math.random() * 1 - 0.5,
-        });
+        Body.setVelocity(
+            asteroid,
+            Vector.add(
+                {
+                    x: Math.random() * -1 - 1,
+                    y: Math.random() * 1 - 0.5,
+                },
+                this.player.velocity
+            )
+        );
 
         Body.setAngle(asteroid, Math.random() * 2 * Math.PI);
 
@@ -255,24 +271,26 @@ export class GameStateService {
     }
 
     private addExplosion(position: Vector): void {
-        const explosionColors = ['red', 'orange', 'yellow'];
+        const explosionColors = ['red', 'orange', 'white', 'grey'];
 
-        // Create a random number of particles
-        for (let i = 0; i < Math.random() * 30 + 20; i++) {
-            const explosion = Bodies.circle(position.x, position.y, 0.5, {
+        for (let i = 0; i < 20; i++) {
+            const explosion = Bodies.circle(position.x, position.y, 0.25, {
                 frictionAir: 0,
                 collisionFilter: {
                     category: COLLISION_CAT_PARTICLES,
                     mask: 0,
                 },
                 render: {
-                    fillStyle:  explosionColors[Math.floor(Math.random() * explosionColors.length)],
+                    fillStyle:
+                        explosionColors[
+                            Math.floor(Math.random() * explosionColors.length)
+                        ],
                 },
             });
 
             Body.setVelocity(explosion, {
-                x: Math.random() * -1 - 1,
-                y: Math.random() * 1 - 0.5,
+                x: Math.random() * -3,
+                y: Math.random() * 0.5 - 0.25,
             });
 
             Composite.add(this.engine.world, [explosion]);

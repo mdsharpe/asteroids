@@ -16,10 +16,11 @@ app.UseHttpsRedirection();
 
 app.UseCors(o =>
 {
-    //o.WithOrigins("http://localhost:4200");
-    o.AllowAnyOrigin();
+    o.WithOrigins("http://localhost:4200", "https://delightful-hill-0a63cb603.5.azurestaticapps.net/");
+    //o.AllowAnyOrigin();
     o.AllowAnyHeader();
     o.AllowAnyMethod();
+    o.AllowCredentials();
 });
 
 app.MapHub<AsteroidGameHub>("/hub");

@@ -30,6 +30,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: NPM install
+        shell: pwsh
+        working-directory: ./src/Asteroids
+        run: npm ci --no-fund --loglevel error
+
       - name: Build
         shell: pwsh
         working-directory: src/Asteroids

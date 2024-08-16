@@ -11,6 +11,7 @@ import {
     World,
 } from 'matter-js';
 import { BehaviorSubject } from 'rxjs';
+import { AsteroidSignalRModel } from './models';
 
 const COLLISION_CAT_PARTICLES = 0x0001;
 const COLLISION_CAT_PLAYER = 0x0002;
@@ -24,7 +25,7 @@ const PLAYAREA_MAXX = 200;
 
 const PLAYER_VACUUMFRICTION = 0.1;
 const PLAYER_VACUUMFRICTION_DEAD = 0.02;
-const PLAYER_ACCEL = 0.00005;
+const PLAYER_ACCEL = 0.00003;
 
 const ASTEROID_WIDTH = 5;
 
@@ -39,6 +40,7 @@ export class GameStateService {
     public readonly runner: Runner;
     public readonly player: Body;
     private readonly playerAlive = new BehaviorSubject<boolean>(false);
+    private readonly otherPlayers: Map<string, Body>;
     private readonly _stars: Set<Body>;
 
     constructor() {
@@ -52,28 +54,25 @@ export class GameStateService {
         Runner.run(this.runner, this.engine);
 
         this._stars = this.initStars();
-        this.player = this.initPlayer();
+        this.player = this.initPlayer(false);
         this.initControls();
         this.initCollisionDetection();
-
-        window.setInterval(() => {
-            const asteroid = this.createAsteroid();
-            Composite.add(this.engine.world, [asteroid]);
-        }, 500);
 
         window.setInterval(() => {
             this.cleanup();
         }, 1000);
 
         this.playerAlive.next(true);
+
+        this.otherPlayers = new Map<string, Body>();
     }
 
-    private initPlayer(): Body {
+    private initPlayer(isOtherPlayer: boolean): Body {
         var player = Bodies.rectangle(
             0,
             PLAYAREA_HEIGHT / 2 - PLAYER_HEIGHT / 2,
-            PLAYER_WIDTH,
-            PLAYER_HEIGHT,
+            PLAYER_HEIGHT, // Width set to height because we rotate after creation
+            PLAYER_WIDTH, // Height set to width because we rotate after creation
             {
                 frictionAir: PLAYER_VACUUMFRICTION,
                 collisionFilter: { category: COLLISION_CAT_PLAYER },
@@ -85,14 +84,18 @@ export class GameStateService {
             player.render.sprite.xScale = 0.07;
             player.render.sprite.yScale = 0.07;
 
+            if (isOtherPlayer) {
+                player.render.opacity = 0.5;
+            }
+
             Body.setAngle(player, Math.PI / 2);
         }
 
         this.playerAlive.subscribe((alive) => {
             if (alive) {
-                this.player.frictionAir = PLAYER_VACUUMFRICTION;
+                player.frictionAir = PLAYER_VACUUMFRICTION;
             } else {
-                this.player.frictionAir = PLAYER_VACUUMFRICTION_DEAD;
+                player.frictionAir = PLAYER_VACUUMFRICTION_DEAD;
             }
         });
 
@@ -136,6 +139,17 @@ export class GameStateService {
         Composite.add(this.engine.world, [...stars]);
 
         return stars;
+    }
+
+    public handleOtherPlayer(otherPlayer: any) {
+        if (this.otherPlayers.has(otherPlayer.id)) {
+            let existingPlayer = this.otherPlayers.get(otherPlayer.id);
+            existingPlayer!.position.y = otherPlayer.yPos;
+        } else {
+            const player = this.initPlayer(true);
+            this.otherPlayers.set(otherPlayer.id, player);
+            console.log("add player: ", otherPlayer.id);
+        }
     }
 
     private initControls(): void {
@@ -221,7 +235,8 @@ export class GameStateService {
         Events.on(this.engine, 'collisionStart', handler);
     }
 
-    private createAsteroid(): Body {
+    public createAsteroid(serverModel: any): Body {
+        debugger;
         const asteroidTextures = [
             './media/asteroid1.svg',
             './media/asteroid2.svg',
@@ -233,7 +248,7 @@ export class GameStateService {
         ];
         const randomTexture =
             asteroidTextures[
-                Math.floor(Math.random() * asteroidTextures.length)
+            Math.floor(Math.random() * asteroidTextures.length)
             ];
 
         // Set default scales
@@ -246,8 +261,8 @@ export class GameStateService {
         }
 
         const asteroid = Bodies.circle(
-            150,
-            Math.random() * 100,
+            serverModel.horizontalPos,
+            serverModel.verticalPos,
             ASTEROID_WIDTH,
             {
                 frictionAir: 0,
@@ -264,22 +279,21 @@ export class GameStateService {
             }
         );
 
+
         if (randomTexture === '.media/enable2.png') {
             Body.setVelocity(asteroid, {
-                x: -0.05,
-                y: Math.random() * 1 - 0.5,
+                x: -0.5,
+                y: serverModel.velocityY,
             });
         }
         else {
             Body.setVelocity(asteroid, {
-                x: Math.random() * -1 - 1,
-                y: Math.random() * 1 - 0.5,
+                x: serverModel.velocityX,
+                y: serverModel.velocityY,
             });
         }
 
-        if (randomTexture !== './media/enable1.png' && randomTexture !== './media/enable2.png') {
-            Body.setAngle(asteroid, Math.random() * 2 * Math.PI);
-        }
+        Body.setAngle(asteroid, Math.random() * 2 * Math.PI);
 
         return asteroid;
     }
@@ -297,7 +311,7 @@ export class GameStateService {
                 render: {
                     fillStyle:
                         explosionColors[
-                            Math.floor(Math.random() * explosionColors.length)
+                        Math.floor(Math.random() * explosionColors.length)
                         ],
                 },
             });

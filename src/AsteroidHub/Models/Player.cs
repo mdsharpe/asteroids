@@ -3,8 +3,8 @@
     public class Player
     {
         public Guid Id { get; set; }
-        public int YPos { get; set; }
-        public int VelocityY { get; set; }
-        public int VelocityX { get; set; }
+        public decimal YPos { get; set; }
+        public decimal? VelocityY { get; set; }
+        public decimal? VelocityX { get; set; }
     }
 }

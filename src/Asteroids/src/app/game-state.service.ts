@@ -211,7 +211,10 @@ export class GameStateService {
         const handler: ICollisionCallback = (evt) => {
             if (evt.pairs.some(isPlayerDamagingCollision)) {
                 this.playerAlive.next(false);
-                this.addExplosion(this.player.position);
+
+                window.setTimeout(() => {
+                    this.addExplosion(this.player.position);
+                }, 0.25);
             }
         };
 
@@ -267,7 +270,7 @@ export class GameStateService {
     private addExplosion(position: Vector): void {
         const explosionColors = ['red', 'orange', 'white', 'grey'];
 
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 50; i++) {
             const explosion = Bodies.circle(position.x, position.y, 0.25, {
                 frictionAir: 0,
                 collisionFilter: {
@@ -286,8 +289,8 @@ export class GameStateService {
                 explosion,
                 Vector.add(
                     {
-                        x: Math.random() * -3,
-                        y: Math.random() * 0.5 - 0.25,
+                        x: (Math.random() - 0.5) * 0.5,
+                        y: (Math.random() - 0.5) * 0.5,
                     },
                     this.player.velocity
                 )

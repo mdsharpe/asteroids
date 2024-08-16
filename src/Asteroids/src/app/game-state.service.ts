@@ -6,6 +6,8 @@ export class GameStateService {
     public readonly engine: Engine;
     public readonly runner: Runner;
     public readonly player: Body;
+    public readonly top: Body;
+    public readonly bottom: Body;
 
     constructor() {
         this.engine = Engine.create({
@@ -18,6 +20,12 @@ export class GameStateService {
         this.player = Bodies.rectangle(30, 45, 20, 10);
         this.player.frictionAir = 0.05;
         Composite.add(this.engine.world, [this.player]);
+
+        this.top = Bodies.rectangle(0, 0, 1000, 1);
+        this.top.isStatic = true;
+        this.bottom = Bodies.rectangle(0, 100, 1000, 1);
+        this.bottom.isStatic = true;
+        Composite.add(this.engine.world, [this.top, this.bottom]);
 
         window.setInterval(() => {
             var asteroid = Bodies.circle(400, 50, 10);

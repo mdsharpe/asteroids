@@ -11,8 +11,11 @@ namespace AsteroidHub.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            logger.LogCritical("Executing task");
+
             while (!stoppingToken.IsCancellationRequested)
             {
+                logger.LogCritical("Entering loop iteration");
                 var randFactor = _random.NextDouble();
 
                 var delay = Task.Delay(Interval, stoppingToken);

@@ -8,7 +8,11 @@ import {
     ViewChild,
 } from '@angular/core';
 import { Render } from 'matter-js';
-import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import {
+    HubConnection,
+    HubConnectionBuilder,
+    LogLevel,
+} from '@microsoft/signalr';
 
 import { GameStateService } from '../game-state.service';
 import { environment } from '../../environments/environment';
@@ -28,7 +32,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
             .build();
 
         connection.on('newAsteroid', (_) => console.log('new asteroid'));
-        connection.on('playerMoved', (player) => this._state.handleOtherPlayer(player));
+        connection.on('playerMoved', (player) =>
+            this._state.handleOtherPlayer(player)
+        );
 
         connection.start().then(() => {
             console.log("connectionstate: ", this._hubConnection.state);
@@ -143,9 +149,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     private generateGuid(): string {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-            const r: number = Math.random() * 16 | 0;
-            const v: number = c === 'x' ? r : (r & 0x3 | 0x8);
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r: number = (Math.random() * 16) | 0;
+            const v: number = c === 'x' ? r : (r & 0x3) | 0x8;
             return v.toString(16);
         });
     }

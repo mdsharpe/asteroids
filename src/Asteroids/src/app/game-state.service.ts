@@ -52,8 +52,8 @@ export class GameStateService {
         });
         Runner.run(this.runner, this.engine);
 
-        this.player = this.initPlayer(false);
         this._stars = this.initStars();
+        this.player = this.initPlayer(false);
         this.initControls();
         this.initCollisionDetection();
 
@@ -75,8 +75,8 @@ export class GameStateService {
         var player = Bodies.rectangle(
             0,
             PLAYAREA_HEIGHT / 2 - PLAYER_HEIGHT / 2,
-            PLAYER_WIDTH,
-            PLAYER_HEIGHT,
+            PLAYER_HEIGHT, // Width set to height because we rotate after creation
+            PLAYER_WIDTH, // Height set to width because we rotate after creation
             {
                 frictionAir: PLAYER_VACUUMFRICTION,
                 collisionFilter: { category: COLLISION_CAT_PLAYER },
@@ -97,9 +97,9 @@ export class GameStateService {
 
         this.playerAlive.subscribe((alive) => {
             if (alive) {
-                this.player.frictionAir = PLAYER_VACUUMFRICTION;
+                player.frictionAir = PLAYER_VACUUMFRICTION;
             } else {
-                this.player.frictionAir = PLAYER_VACUUMFRICTION_DEAD;
+                player.frictionAir = PLAYER_VACUUMFRICTION_DEAD;
             }
         });
 
@@ -148,9 +148,8 @@ export class GameStateService {
     public handleOtherPlayer(otherPlayer: any) {
         if (this.otherPlayers.has(otherPlayer.id)) {
             let existingPlayer = this.otherPlayers.get(otherPlayer.id);
-            existingPlayer!.position.y = otherPlayer.yPos
-        }
-        else {
+            existingPlayer!.position.y = otherPlayer.yPos;
+        } else {
             const player = this.initPlayer(true);
             this.otherPlayers.set(otherPlayer.id, player);
             console.log("add player: ", otherPlayer.id);

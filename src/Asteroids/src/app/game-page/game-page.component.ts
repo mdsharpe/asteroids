@@ -33,7 +33,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             element: this._worldContainer.nativeElement,
             engine: this._state.engine,
             options: {
-                wireframes: true,
+                wireframes: false,
                 showAxes: true,
                 hasBounds: true,
                 showBounds: true,
@@ -116,8 +116,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
             scaleX = outerRatio / innerRatio;
         }
 
-        console.log(scaleX, scaleY);
-
         // position and size
         render.bounds.min.x = bounds.min.x;
         render.bounds.max.x = bounds.min.x + width * scaleX;
@@ -135,14 +133,5 @@ export class GamePageComponent implements OnInit, OnDestroy {
         render.bounds.max.x -= padding.x;
         render.bounds.min.y -= padding.y;
         render.bounds.max.y -= padding.y;
-
-        console.log(
-            render.bounds.min.x,
-            render.bounds.min.y,
-            render.bounds.max.x,
-            render.bounds.max.y
-        );
-
-        render.options.wireframes = false;
     }
 }

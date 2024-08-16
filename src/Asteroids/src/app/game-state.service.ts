@@ -153,6 +153,7 @@ export class GameStateService {
         else {
             const player = this.initPlayer(true);
             this.otherPlayers.set(otherPlayer.id, player);
+            console.log("add player: ", otherPlayer.id);
         }
     }
 

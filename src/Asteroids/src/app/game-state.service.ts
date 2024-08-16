@@ -13,6 +13,7 @@ import { BehaviorSubject } from 'rxjs';
 
 const COLLISION_CAT_PLAYER = 0x0001;
 const COLLISION_CAT_ASTEROID = 0x0002;
+const COLLISION_CAT_STARS = 0x0004;
 
 const PLAYER_WIDTH = 10;
 const PLAYER_HEIGHT = 5;
@@ -21,12 +22,18 @@ const PLAYAREA_HEIGHT = 100;
 const PLAYER_VACUUMFRICTION = 0.1;
 const PLAYER_ACCEL = 0.00005;
 
+const STAR_COUNT = 500;
+const STAR_WIDTH = 0.15;
+const STAR_DEPTH_MIN = 1;
+const STAR_DEPTH_MAX = 10;
+
 @Injectable()
 export class GameStateService {
     public readonly engine: Engine;
     public readonly runner: Runner;
     public readonly player: Body;
     private readonly playerAlive = new BehaviorSubject<boolean>(false);
+    private readonly _stars: Set<Body>;
 
     constructor() {
         this.engine = Engine.create({
@@ -40,6 +47,7 @@ export class GameStateService {
         Runner.run(this.runner, this.engine);
 
         this.player = this.initPlayer();
+        this._stars = this.initStars();
         this.initControls();
         this.initCollisionDetection();
 
@@ -68,6 +76,39 @@ export class GameStateService {
         );
         Composite.add(this.engine.world, [player]);
         return player;
+    }
+
+    private initStars(): Set<Body> {
+        const stars = new Set<Body>();
+
+        for (let i = 0; i < STAR_COUNT; i++) {
+            const depth =
+                Math.random() * (STAR_DEPTH_MAX - STAR_DEPTH_MIN) +
+                STAR_DEPTH_MIN;
+
+            const star = Bodies.circle(
+                Math.random() * 200,
+                Math.random() * PLAYAREA_HEIGHT,
+                STAR_WIDTH,
+                {
+                    frictionAir: 0,
+                    collisionFilter: { category: COLLISION_CAT_STARS,
+                        mask: 0
+                     },
+                }
+            );
+
+            Body.setVelocity(star, {
+                x: depth * -0.1,
+                y: 0,
+            });
+
+            stars.add(star);
+        }
+
+        Composite.add(this.engine.world, [...stars]);
+
+        return stars;
     }
 
     private initControls(): void {

@@ -34,6 +34,14 @@ export class GamePageComponent implements OnInit, OnDestroy {
             options: {
                 wireframes: true,
                 showAxes: true,
+                hasBounds: true,
+                showBounds: true,
+                showAngleIndicator: true,
+                showCollisions: true,
+                showInternalEdges: true,
+                showVelocity: true,
+                showStats: true,
+                showDebug: true,
             },
         });
 
@@ -60,7 +68,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
         const container = this._worldContainer.nativeElement;
         const render = this._render;
-        const player = this._state.player;
 
         (<any>Render).setSize(
             render,
@@ -69,25 +76,14 @@ export class GamePageComponent implements OnInit, OnDestroy {
         );
 
         const padding = {
-            x: 200,
-            y: 30,
+            x: 0,
+            y: 0,
         };
 
         var bounds = {
-            min: { x: Infinity, y: Infinity },
-            max: { x: -Infinity, y: -Infinity },
+            min: { x: 0, y: 0 },
+            max: { x: 50, y: 100 },
         };
-
-        let min = player.bounds.min,
-            max = player.bounds.max;
-
-        min.x += 150;
-        max.x += 150;
-
-        if (min.x < bounds.min.x) bounds.min.x = min.x;
-        if (max.x > bounds.max.x) bounds.max.x = max.x;
-        if (min.y < bounds.min.y) bounds.min.y = min.y;
-        if (max.y > bounds.max.y) bounds.max.y = max.y;
 
         // find ratios
         var width = bounds.max.x - bounds.min.x + 2 * padding.x,
@@ -106,8 +102,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             scaleX = outerRatio / innerRatio;
         }
 
-        // enable bounds
-        render.options.hasBounds = true;
+        console.log(scaleX, scaleY);
 
         // position and size
         render.bounds.min.x = bounds.min.x;
@@ -126,5 +121,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
         render.bounds.max.x -= padding.x;
         render.bounds.min.y -= padding.y;
         render.bounds.max.y -= padding.y;
+
+        console.log(
+            render.bounds.min.x,
+            render.bounds.min.y,
+            render.bounds.max.x,
+            render.bounds.max.y
+        );
     }
 }

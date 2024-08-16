@@ -17,7 +17,7 @@ export class GameStateService {
         this.runner = Runner.create();
         Runner.run(this.runner, this.engine);
 
-        this.player = Bodies.rectangle(30, 45, 20, 10);
+        this.player = Bodies.rectangle(0, 45, 10, 5);
         this.player.frictionAir = 0.05;
         Composite.add(this.engine.world, [this.player]);
 
@@ -28,8 +28,8 @@ export class GameStateService {
         Composite.add(this.engine.world, [this.top, this.bottom]);
 
         window.setInterval(() => {
-            var asteroid = Bodies.circle(400, 50, 10);
-            Body.setVelocity(asteroid, { x: -3, y: 0 });
+            var asteroid = Bodies.circle(200, 50, 10);
+            Body.setVelocity(asteroid, { x: -1, y: 0 });
             asteroid.frictionAir = 0;
 
             Composite.add(this.engine.world, [asteroid]);
@@ -51,7 +51,7 @@ export class GameStateService {
                         x: this.player.position.x,
                         y: this.player.position.y,
                     },
-                    { x: 0, y: -0.0001 }
+                    { x: 0, y: -0.00005 }
                 );
             }
 
@@ -62,7 +62,7 @@ export class GameStateService {
                         x: this.player.position.x,
                         y: this.player.position.y,
                     },
-                    { x: 0, y: 0.0001 }
+                    { x: 0, y: 0.00005 }
                 );
             }
         });

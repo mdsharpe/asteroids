@@ -36,7 +36,6 @@ export class GameStateService {
         });
 
         Events.on(this.engine, 'beforeUpdate', (event) => {
-            console.log(keysDown);
             if (keysDown.has('KeyW')) {
                 Body.applyForce(
                     this.player,
@@ -47,6 +46,7 @@ export class GameStateService {
                     { x: 0, y: -0.0001 }
                 );
             }
+            
             if (keysDown.has('KeyS')) {
                 Body.applyForce(
                     this.player,

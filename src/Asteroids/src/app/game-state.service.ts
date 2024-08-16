@@ -41,9 +41,11 @@ export class GameStateService {
     public readonly engine: Engine;
     public readonly runner: Runner;
     public readonly player: Body;
-    private readonly playerAlive = new BehaviorSubject<boolean>(false);
+    private readonly _playerAlive$ = new BehaviorSubject<boolean>(false);
     private readonly otherPlayers: Map<string, Body>;
     private readonly _stars: Set<Body>;
+
+    public readonly playerAlive$ = this._playerAlive$.asObservable();
 
     constructor() {
         this.engine = Engine.create({
@@ -64,9 +66,11 @@ export class GameStateService {
             this.cleanup();
         }, 1000);
 
-        this.playerAlive.next(true);
-
         this.otherPlayers = new Map<string, Body>();
+    }
+
+    public startLocalPlayer(): void {
+        this._playerAlive$.next(true);
     }
 
     private initPlayer(isOtherPlayer: boolean): Body {
@@ -101,9 +105,13 @@ export class GameStateService {
             Body.setAngle(player, Math.PI / 2);
         }
 
-        this.playerAlive.subscribe((alive) => {
+        this._playerAlive$.subscribe((alive) => {
             if (alive) {
                 player.frictionAir = PLAYER_VACUUMFRICTION;
+                Body.setVelocity(player, { x: 0, y: 0 });
+                Body.setPosition(player, { x: 0, y: PLAYAREA_HEIGHT / 2 });
+                Body.setAngle(player, Math.PI / 2);
+                Body.setAngularSpeed(player, 0);
             } else {
                 player.frictionAir = PLAYER_VACUUMFRICTION_DEAD;
             }
@@ -213,7 +221,7 @@ export class GameStateService {
             }
         };
 
-        this.playerAlive.subscribe((alive) => {
+        this._playerAlive$.subscribe((alive) => {
             if (alive) {
                 Events.on(this.engine, 'beforeUpdate', onTick);
             } else {
@@ -237,7 +245,7 @@ export class GameStateService {
 
         const handler: ICollisionCallback = (evt) => {
             if (evt.pairs.some(isPlayerDamagingCollision)) {
-                this.playerAlive.next(false);
+                this._playerAlive$.next(false);
 
                 window.setTimeout(() => {
                     this.addExplosion(this.player.position);
@@ -248,14 +256,15 @@ export class GameStateService {
         Events.on(this.engine, 'collisionStart', handler);
     }
 
-    public createAsteroid(serverModel: any): Body {
-        debugger;
+    public createAsteroid(serverModel?: any): void {
         const asteroidTextures = [
             './media/asteroid1.svg',
             './media/asteroid2.svg',
             './media/asteroid3.svg',
             './media/asteroid4.svg',
             './media/asteroid5.svg',
+            './media/enable1.png',
+            './media/enable2.png',
         ];
         const randomTexture =
             asteroidTextures[
@@ -265,6 +274,11 @@ export class GameStateService {
         // Set default scales
         let xScale = 0.1;
         let yScale = 0.1;
+
+        if (randomTexture === './media/enable1.png' || randomTexture === './media/enable2.png') {
+            xScale = 0.015;
+            yScale = 0.015;
+        }
 
         const asteroid = Bodies.circle(
             serverModel.horizontalPos,
@@ -285,14 +299,23 @@ export class GameStateService {
             }
         );
 
-        Body.setVelocity(asteroid, {
-            x: serverModel.velocityX,
-            y: serverModel.velocityY,
-        });
 
-        Body.setAngularVelocity(asteroid, Math.random() * 0.1 - 0.05);
+        if (randomTexture === '.media/enable2.png') {
+            Body.setVelocity(asteroid, {
+                x: -0.5,
+                y: serverModel.velocityY,
+            });
+        }
+        else {
+            Body.setVelocity(asteroid, {
+                x: serverModel.velocityX,
+                y: serverModel.velocityY,
+            });
+        }
 
-        return asteroid;
+        Body.setAngle(asteroid, Math.random() * 2 * Math.PI);
+
+        Composite.add(this.engine.world, [asteroid]);
     }
 
     private addExplosion(position: Vector): void {

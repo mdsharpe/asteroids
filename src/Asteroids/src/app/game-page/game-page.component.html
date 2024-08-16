@@ -1,1 +1,6 @@
 <div class="world-container" #worldContainer></div>
+
+<div *ngIf="showingRestartButton$ | async" class="restart-panel">
+    Game over!<br />
+    <button (click)="onRestartClick()">Restart</button>
+</div>

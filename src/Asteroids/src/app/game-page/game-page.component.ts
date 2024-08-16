@@ -17,11 +17,13 @@ import {
 import { GameStateService } from '../game-state.service';
 import { environment } from '../../environments/environment';
 import { AsteroidSignalRModel } from '../models';
+import { CommonModule } from '@angular/common';
+import { distinctUntilChanged, map } from 'rxjs';
 
 @Component({
     selector: 'app-game-page',
     standalone: true,
-    imports: [],
+    imports: [CommonModule],
     templateUrl: './game-page.component.html',
     styleUrl: './game-page.component.scss',
 })
@@ -46,10 +48,17 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
         this._hubConnection = connection;
     }
+
     private readonly _state = inject(GameStateService);
     private _hubConnection: HubConnection;
 
     private _render: Matter.Render | null = null;
+
+    public readonly showingRestartButton$ = this._state.playerAlive$
+    .pipe(
+        map((isAlive) => !isAlive),
+        distinctUntilChanged()
+    );
 
     @ViewChild('worldContainer', { static: true })
     private _worldContainer!: ElementRef<HTMLElement>;
@@ -68,12 +77,18 @@ export class GamePageComponent implements OnInit, OnDestroy {
         Render.run(this._render);
 
         this.fitToScreen();
+
+        this._state.startLocalPlayer();
     }
 
     public ngOnDestroy(): void {
         if (this._render) {
             Render.stop(this._render);
         }
+    }
+
+    public onRestartClick(): void {
+        this._state.startLocalPlayer();
     }
 
     @HostListener('window:resize', ['$event'])

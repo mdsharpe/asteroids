@@ -32,7 +32,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             .configureLogging(LogLevel.Information)
             .build();
 
-        connection.on('newAsteroid', (_) => console.log('new asteroid'));
+        connection.on('newAsteroid', (asteroid) => this._state.createAsteroid(asteroid));
         connection.on('playerMoved', (player) =>
             this._state.handleOtherPlayer(player)
         );
@@ -45,7 +45,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         });
 
         this._hubConnection = connection;
-    } 
+    }
     private readonly _state = inject(GameStateService);
     private _hubConnection: HubConnection;
 
@@ -142,11 +142,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     private spawnPlayer(): void {
-            console.log("Spawning");
-            this._hubConnection.send('broadcastPlayer', {
-                id: this.generateGuid(),
-                yPos: Math.random() * 5
-            });
+        console.log("Spawning");
+        this._hubConnection.send('broadcastPlayer', {
+            id: this.generateGuid(),
+            yPos: Math.random() * 5
+        });
     }
 
     private generateGuid(): string {

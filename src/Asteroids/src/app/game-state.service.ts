@@ -236,6 +236,7 @@ export class GameStateService {
     }
 
     public createAsteroid(serverModel: any): Body {
+        debugger;
         const asteroidTextures = [
             './media/asteroid1.svg',
             './media/asteroid2.svg',

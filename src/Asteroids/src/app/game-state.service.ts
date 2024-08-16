@@ -10,12 +10,17 @@ import {
 } from 'matter-js';
 import { BehaviorSubject } from 'rxjs';
 
+const COLLISION_CAT_PLAYER = 0x0001;
+const COLLISION_CAT_ASTEROID = 0x0002;
+const COLLISION_CAT_WALL = 0x0003;
+
 @Injectable()
 export class GameStateService {
     public readonly engine: Engine;
     public readonly runner: Runner;
     public readonly player: Body;
     private readonly playerAlive = new BehaviorSubject<boolean>(false);
+    private readonly _walls: Body[];
 
     constructor() {
         this.engine = Engine.create({
@@ -27,18 +32,12 @@ export class GameStateService {
         Runner.run(this.runner, this.engine);
 
         this.player = this.initPlayer();
-        this.initWalls();
+        this._walls = this.initWalls();
         this.initControls();
         this.initCollisionDetection();
 
         window.setInterval(() => {
-            var asteroid = Bodies.circle(200, 50, 10, { frictionAir: 0 });
-
-            Body.setVelocity(asteroid, {
-                x: Math.random() * -1 - 1,
-                y: Math.random() * 2 - 1,
-            });
-
+            const asteroid = this.createAsteroid();
             Composite.add(this.engine.world, [asteroid]);
         }, 1000);
 
@@ -46,16 +45,28 @@ export class GameStateService {
     }
 
     private initPlayer(): Body {
-        const player = Bodies.rectangle(0, 45, 10, 5, { frictionAir: 0.05 });
+        const player = Bodies.rectangle(0, 45, 10, 5, {
+            frictionAir: 0.05,
+            collisionFilter: { category: COLLISION_CAT_PLAYER },
+        });
         Composite.add(this.engine.world, [player]);
         return player;
     }
 
-    private initWalls(): void {
-        Composite.add(this.engine.world, [
-            Bodies.rectangle(0, 0, 1000, 1, { isStatic: true }),
-            Bodies.rectangle(0, 100, 1000, 1, { isStatic: true }),
-        ]);
+    private initWalls(): Body[] {
+        const createWall = (y: number) => {
+            return Bodies.rectangle(0, y, 1000, 1, {
+                isStatic: true,
+                collisionFilter: {
+                    category: COLLISION_CAT_WALL,
+                    mask: COLLISION_CAT_PLAYER,
+                },
+            });
+        };
+
+        const walls = [createWall(0), createWall(100)];
+        Composite.add(this.engine.world, walls);
+        return walls;
     }
 
     private initControls(): void {
@@ -101,12 +112,24 @@ export class GameStateService {
     }
 
     private initCollisionDetection(): void {
+        const isPlayerDamagingCollision = (pair: Matter.Pair) => {
+            const parties = [pair.bodyA, pair.bodyB];
+
+            if (!parties.some((o) => o === this.player)) {
+                return false;
+            }
+
+            const playerCollidedWith = parties.find((o) => o !== this.player);
+
+            if (this._walls.some((o) => playerCollidedWith === o)) {
+                return false;
+            }
+
+            return true;
+        };
+
         const handler: ICollisionCallback = (evt) => {
-            if (
-                evt.pairs.some(
-                    (p) => p.bodyA === this.player || p.bodyB === this.player
-                )
-            ) {
+            if (evt.pairs.some(isPlayerDamagingCollision)) {
                 this.playerAlive.next(false);
             }
         };
@@ -118,5 +141,21 @@ export class GameStateService {
                 Events.off(this.engine, 'collisionStart', handler);
             }
         });
+    }
+
+    private createAsteroid(): Body {
+        const asteroid = Bodies.circle(200, 50, 10, {
+            frictionAir: 0,
+            collisionFilter: {
+                category: COLLISION_CAT_ASTEROID,
+            },
+        });
+
+        Body.setVelocity(asteroid, {
+            x: Math.random() * -1 - 1,
+            y: Math.random() * 2 - 1,
+        });
+
+        return asteroid;
     }
 }

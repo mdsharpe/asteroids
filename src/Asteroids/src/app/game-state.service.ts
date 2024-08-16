@@ -7,13 +7,14 @@ import {
     Events,
     ICollisionCallback,
     Runner,
+    Vector,
     World,
 } from 'matter-js';
 import { BehaviorSubject } from 'rxjs';
 
-const COLLISION_CAT_PLAYER = 0x0001;
-const COLLISION_CAT_ASTEROID = 0x0002;
-const COLLISION_CAT_STARS = 0x0004;
+const COLLISION_CAT_PARTICLES = 0x0001;
+const COLLISION_CAT_PLAYER = 0x0002;
+const COLLISION_CAT_ASTEROID = 0x0004;
 
 const PLAYER_WIDTH = 10;
 const PLAYER_HEIGHT = 5;
@@ -111,7 +112,10 @@ export class GameStateService {
                 STAR_WIDTH,
                 {
                     frictionAir: 0,
-                    collisionFilter: { category: COLLISION_CAT_STARS, mask: 0 },
+                    collisionFilter: {
+                        category: COLLISION_CAT_PARTICLES,
+                        mask: 0,
+                    },
                     render: {
                         fillStyle: 'white',
                         opacity: 1 / (STAR_DEPTH_MAX - (depth - 1)),
@@ -205,16 +209,11 @@ export class GameStateService {
         const handler: ICollisionCallback = (evt) => {
             if (evt.pairs.some(isPlayerDamagingCollision)) {
                 this.playerAlive.next(false);
+                this.addExplosion(this.player.position);
             }
         };
 
-        this.playerAlive.subscribe((alive) => {
-            if (alive) {
-                Events.on(this.engine, 'collisionStart', handler);
-            } else {
-                Events.off(this.engine, 'collisionStart', handler);
-            }
-        });
+        Events.on(this.engine, 'collisionStart', handler);
     }
 
     private createAsteroid(): Body {
@@ -253,6 +252,31 @@ export class GameStateService {
         Body.setAngle(asteroid, Math.random() * 2 * Math.PI);
 
         return asteroid;
+    }
+
+    private addExplosion(position: Vector): void {
+        const explosionColors = ['red', 'orange', 'yellow'];
+
+        // Create a random number of particles
+        for (let i = 0; i < Math.random() * 30 + 20; i++) {
+            const explosion = Bodies.circle(position.x, position.y, 0.5, {
+                frictionAir: 0,
+                collisionFilter: {
+                    category: COLLISION_CAT_PARTICLES,
+                    mask: 0,
+                },
+                render: {
+                    fillStyle:  explosionColors[Math.floor(Math.random() * explosionColors.length)],
+                },
+            });
+
+            Body.setVelocity(explosion, {
+                x: Math.random() * -1 - 1,
+                y: Math.random() * 1 - 0.5,
+            });
+
+            Composite.add(this.engine.world, [explosion]);
+        }
     }
 
     private cleanup(): void {

@@ -51,6 +51,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: "app-asteroids"
-          slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7EB4568519894F02890C013E4A726053 }}
           package: ${{env.DOTNET_ROOT}}/myapp

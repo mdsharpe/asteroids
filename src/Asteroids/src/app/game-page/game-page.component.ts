@@ -11,6 +11,7 @@ import { Render } from 'matter-js';
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 
 import { GameStateService } from '../game-state.service';
+import { environment } from '../../environments/environment';
 
 @Component({
     selector: 'app-game-page',
@@ -59,7 +60,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     // TODO [MW] Do this in game state service
     private async initSignalRConnection(): Promise<void> {
         const connection = new HubConnectionBuilder()
-            .withUrl('https://localhost:5127/hub')
+            .withUrl(`${environment.signalRBaseUri}/hub`)
             .configureLogging(LogLevel.Information)
             .build();
 

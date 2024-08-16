@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-//builder.Services.AddHostedService<AsteroidGenerator>();
+builder.Services.AddHostedService<AsteroidGenerator>();
 
 builder.Services.AddSignalR();
 

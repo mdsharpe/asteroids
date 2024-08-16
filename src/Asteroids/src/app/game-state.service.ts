@@ -7,13 +7,14 @@ import {
     Events,
     ICollisionCallback,
     Runner,
+    Vector,
     World,
 } from 'matter-js';
 import { BehaviorSubject } from 'rxjs';
 
-const COLLISION_CAT_PLAYER = 0x0001;
-const COLLISION_CAT_ASTEROID = 0x0002;
-const COLLISION_CAT_STARS = 0x0004;
+const COLLISION_CAT_PARTICLES = 0x0001;
+const COLLISION_CAT_PLAYER = 0x0002;
+const COLLISION_CAT_ASTEROID = 0x0004;
 
 const PLAYER_WIDTH = 10;
 const PLAYER_HEIGHT = 5;
@@ -22,12 +23,15 @@ const PLAYAREA_MINX = -200;
 const PLAYAREA_MAXX = 200;
 
 const PLAYER_VACUUMFRICTION = 0.1;
-const PLAYER_ACCEL = 0.00005;
+const PLAYER_VACUUMFRICTION_DEAD = 0.02;
+const PLAYER_ACCEL = 0.00003;
 
-const STAR_COUNT = 500;
-const STAR_WIDTH = 0.15;
-const STAR_DEPTH_MIN = 1;
-const STAR_DEPTH_MAX = 10;
+const ASTEROID_WIDTH = 5;
+
+const STAR_COUNT = 750;
+const STAR_WIDTH = 0.2;
+const STAR_DEPTH_MIN = 0;
+const STAR_DEPTH_MAX = 7;
 
 @Injectable()
 export class GameStateService {
@@ -81,8 +85,8 @@ export class GameStateService {
 
         if (player.render.sprite) {
             player.render.sprite.texture = './media/rocketship.svg';
-            player.render.sprite.xScale = 0.1;
-            player.render.sprite.yScale = 0.1;
+            player.render.sprite.xScale = 0.07;
+            player.render.sprite.yScale = 0.07;
 
             if (isOtherPlayer) {
                 player.render.opacity = 0.5;
@@ -90,6 +94,14 @@ export class GameStateService {
 
             Body.setAngle(player, Math.PI / 2);
         }
+
+        this.playerAlive.subscribe((alive) => {
+            if (alive) {
+                this.player.frictionAir = PLAYER_VACUUMFRICTION;
+            } else {
+                this.player.frictionAir = PLAYER_VACUUMFRICTION_DEAD;
+            }
+        });
 
         Composite.add(this.engine.world, [player]);
         return player;
@@ -109,12 +121,19 @@ export class GameStateService {
                 STAR_WIDTH,
                 {
                     frictionAir: 0,
-                    collisionFilter: { category: COLLISION_CAT_STARS, mask: 0 },
+                    collisionFilter: {
+                        category: COLLISION_CAT_PARTICLES,
+                        mask: 0,
+                    },
+                    render: {
+                        fillStyle: 'white',
+                        opacity: 1 / (STAR_DEPTH_MAX - (depth - 1)),
+                    },
                 }
             );
 
             Body.setVelocity(star, {
-                x: depth * -0.1,
+                x: depth * -0.05,
                 y: 0,
             });
 
@@ -210,32 +229,93 @@ export class GameStateService {
         const handler: ICollisionCallback = (evt) => {
             if (evt.pairs.some(isPlayerDamagingCollision)) {
                 this.playerAlive.next(false);
+
+                window.setTimeout(() => {
+                    this.addExplosion(this.player.position);
+                }, 0.25);
             }
         };
 
-        this.playerAlive.subscribe((alive) => {
-            if (alive) {
-                Events.on(this.engine, 'collisionStart', handler);
-            } else {
-                Events.off(this.engine, 'collisionStart', handler);
-            }
-        });
+        Events.on(this.engine, 'collisionStart', handler);
     }
 
     private createAsteroid(): Body {
-        const asteroid = Bodies.circle(150, Math.random() * 100, 10, {
-            frictionAir: 0,
-            collisionFilter: {
-                category: COLLISION_CAT_ASTEROID,
-            },
-        });
+        const asteroidTextures = [
+            './media/asteroid1.svg',
+            './media/asteroid2.svg',
+            './media/asteroid3.svg',
+            './media/asteroid4.svg',
+            './media/asteroid5.svg',
+        ];
+        const randomTexture =
+            asteroidTextures[
+                Math.floor(Math.random() * asteroidTextures.length)
+            ];
+
+        // Set default scales
+        let xScale = 0.1;
+        let yScale = 0.1;
+
+        const asteroid = Bodies.circle(
+            150,
+            Math.random() * 100,
+            ASTEROID_WIDTH,
+            {
+                frictionAir: 0,
+                collisionFilter: {
+                    category: COLLISION_CAT_ASTEROID,
+                },
+                render: {
+                    sprite: {
+                        texture: randomTexture,
+                        xScale: xScale,
+                        yScale: yScale,
+                    },
+                },
+            }
+        );
 
         Body.setVelocity(asteroid, {
             x: Math.random() * -1 - 1,
             y: Math.random() * 1 - 0.5,
         });
 
+        Body.setAngularVelocity(asteroid, Math.random() * 0.1 - 0.05);
+
         return asteroid;
+    }
+
+    private addExplosion(position: Vector): void {
+        const explosionColors = ['red', 'orange', 'white', 'grey'];
+
+        for (let i = 0; i < 50; i++) {
+            const explosion = Bodies.circle(position.x, position.y, 0.25, {
+                frictionAir: 0,
+                collisionFilter: {
+                    category: COLLISION_CAT_PARTICLES,
+                    mask: 0,
+                },
+                render: {
+                    fillStyle:
+                        explosionColors[
+                            Math.floor(Math.random() * explosionColors.length)
+                        ],
+                },
+            });
+
+            Body.setVelocity(
+                explosion,
+                Vector.add(
+                    {
+                        x: (Math.random() - 0.5) * 0.5,
+                        y: (Math.random() - 0.5) * 0.5,
+                    },
+                    this.player.velocity
+                )
+            );
+
+            Composite.add(this.engine.world, [explosion]);
+        }
     }
 
     private cleanup(): void {

@@ -1,4 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using AsteroidHub.Models;
 using Microsoft.AspNetCore.SignalR.Client;
 
 Console.WriteLine("Hello, World!");
@@ -23,8 +24,20 @@ connection.On<int, int, int, int, int, int>("newAsteroid", (
                 int horizontalPos,
                 int velocityX,
                 int velocityY) =>
+    Console.WriteLine($"Asteroid = W:{width}, H:{height}, VPos:{verticalPos}, HPos:{horizontalPos}, VX:{velocityX}, VY:{velocityY}"));
+
+connection.On<Player>("playerMoved", (
+                Player player) =>
+    Console.WriteLine($"Player = {player.Id}"));
+
+for ( int i = 0; i < 10; i++ )
 {
-    Console.WriteLine($"Asteroid = W:{width}, H:{height}, VPos:{verticalPos}, HPos:{horizontalPos}, VX:{velocityX}, VY:{velocityY}");
-});
+    var player = new Player()
+    {
+        Id = Guid.NewGuid(),
+    };
+
+    await connection.InvokeAsync("BroadcastPlayer", player);
+}
 
 Console.Read();

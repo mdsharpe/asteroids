@@ -33,8 +33,6 @@ namespace AsteroidHub.Services
             var asteroids = new List<Asteroid>();
             for (int i = 1; i <= 3; i++)
             {
-                var width = randFactor * 10;
-                var height = randFactor * 10;
                 var verticalPos = i * randFactor * 100;
                 var horizontalPos = 110;
                 var velocityx = _random.Next(1, 10);
@@ -42,8 +40,6 @@ namespace AsteroidHub.Services
 
                 asteroids.Add(
                     new Asteroid(
-                        (int)width,
-                        (int)height,
                         (int)verticalPos,
                         horizontalPos,
                         velocityx,
@@ -52,8 +48,8 @@ namespace AsteroidHub.Services
 
             foreach (var asteroid in asteroids)
             {
-                await hub.Clients.All.SendAsync("newAsteroid", asteroid.Width, asteroid.Height, asteroid.VerticalPos, asteroid.HorizontalPos, asteroid.VelocityX, asteroid.VelocityY, stoppingToken);
-                var logmsg = $"Asteroid = W:{asteroid.Width}, H:{asteroid.Height}, VPos:{asteroid.VerticalPos}, HPos:{asteroid.HorizontalPos}, VX:{asteroid.VelocityX}, VY:{asteroid.VelocityY}";
+                await hub.Clients.All.SendAsync("newAsteroid", asteroid, stoppingToken);
+                //var logmsg = $"Asteroid = W:{asteroid.Width}, H:{asteroid.Height}, VPos:{asteroid.VerticalPos}, HPos:{asteroid.HorizontalPos}, VX:{asteroid.VelocityX}, VY:{asteroid.VelocityY}";
             }
         }
     }

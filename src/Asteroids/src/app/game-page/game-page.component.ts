@@ -16,6 +16,7 @@ import {
 
 import { GameStateService } from '../game-state.service';
 import { environment } from '../../environments/environment';
+import { AsteroidSignalRModel } from '../models';
 
 @Component({
     selector: 'app-game-page',

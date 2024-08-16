@@ -11,6 +11,7 @@ import {
     World,
 } from 'matter-js';
 import { BehaviorSubject } from 'rxjs';
+import { AsteroidSignalRModel } from './models';
 
 const COLLISION_CAT_PARTICLES = 0x0001;
 const COLLISION_CAT_PLAYER = 0x0002;
@@ -56,11 +57,6 @@ export class GameStateService {
         this.player = this.initPlayer(false);
         this.initControls();
         this.initCollisionDetection();
-
-        window.setInterval(() => {
-            const asteroid = this.createAsteroid();
-            Composite.add(this.engine.world, [asteroid]);
-        }, 500);
 
         window.setInterval(() => {
             this.cleanup();
@@ -239,7 +235,7 @@ export class GameStateService {
         Events.on(this.engine, 'collisionStart', handler);
     }
 
-    private createAsteroid(): Body {
+    public createAsteroid(serverModel: any): Body {
         const asteroidTextures = [
             './media/asteroid1.svg',
             './media/asteroid2.svg',
@@ -249,7 +245,7 @@ export class GameStateService {
         ];
         const randomTexture =
             asteroidTextures[
-                Math.floor(Math.random() * asteroidTextures.length)
+            Math.floor(Math.random() * asteroidTextures.length)
             ];
 
         // Set default scales
@@ -257,8 +253,8 @@ export class GameStateService {
         let yScale = 0.1;
 
         const asteroid = Bodies.circle(
-            150,
-            Math.random() * 100,
+            serverModel.horizontalPos,
+            serverModel.verticalPos,
             ASTEROID_WIDTH,
             {
                 frictionAir: 0,
@@ -276,8 +272,8 @@ export class GameStateService {
         );
 
         Body.setVelocity(asteroid, {
-            x: Math.random() * -1 - 1,
-            y: Math.random() * 1 - 0.5,
+            x: serverModel.velocityX,
+            y: serverModel.velocityY,
         });
 
         Body.setAngularVelocity(asteroid, Math.random() * 0.1 - 0.05);
@@ -298,7 +294,7 @@ export class GameStateService {
                 render: {
                     fillStyle:
                         explosionColors[
-                            Math.floor(Math.random() * explosionColors.length)
+                        Math.floor(Math.random() * explosionColors.length)
                         ],
                 },
             });

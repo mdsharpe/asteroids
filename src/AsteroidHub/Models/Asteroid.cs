@@ -1,23 +1,11 @@
 ﻿namespace AsteroidHub.Models
 {
     public class Asteroid(
-        int width,
-        int height,
         int verticalPos, 
         int horizontalPos, 
         int velocityx, 
         int velocityy)
     {
-        /// <summary>
-        /// Asteroid width.
-        /// </summary>
-        public int Width { get; set; } = width;
-
-        /// <summary>
-        /// Asteroid Height.
-        /// </summary>
-        public int Height { get; set; } = height;
-
         /// <summary>
         /// Starting y-axis position.
         /// </summary>

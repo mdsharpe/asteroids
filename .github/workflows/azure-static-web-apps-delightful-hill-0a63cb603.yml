@@ -48,5 +48,6 @@ jobs:
           skip_app_build: true
           skip_api_build: true
           output_location: ''
-          app_location: './src/Asteroids/dist/asteroids/browser'
+          app_location: './src/Asteroids/dist/browser'
+          config_file_location: './src/Asteroids'
 

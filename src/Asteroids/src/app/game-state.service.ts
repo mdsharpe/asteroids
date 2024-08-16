@@ -46,7 +46,7 @@ export class GameStateService {
     }
 
     private initPlayer(): Body {
-        const player = Bodies.rectangle(
+        var player = Bodies.rectangle(
             0,
             PLAYAREA_HEIGHT / 2 - PLAYER_HEIGHT / 2,
             PLAYER_WIDTH,
@@ -56,6 +56,15 @@ export class GameStateService {
                 collisionFilter: { category: COLLISION_CAT_PLAYER },
             }
         );
+
+        if (player.render.sprite) {
+            player.render.sprite.texture = './media/rocketship.svg';
+            player.render.sprite.xScale = 0.1;
+            player.render.sprite.yScale = 0.1;
+
+            Body.setAngle(player, Math.PI / 2);
+        }
+
         Composite.add(this.engine.world, [player]);
         return player;
     }

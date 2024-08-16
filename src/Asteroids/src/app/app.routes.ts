@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { GamePageComponent } from './game-page/game-page.component';
 import { MenuComponent } from './menu/menu.component';
 import { LeaderboardComponent } from './leaderboard/leaderboard.component';
+import { DumpComponent } from './dump/dump.component';
 
 export const routes: Routes = [
     {
@@ -15,6 +16,10 @@ export const routes: Routes = [
     {
         path: 'leaderboard',
         component: LeaderboardComponent
+    },
+    {
+        path: 'dump',
+        component: DumpComponent
     },
     {
         path: '**',

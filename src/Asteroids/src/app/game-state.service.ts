@@ -24,10 +24,10 @@ const PLAYAREA_MAXX = 200;
 const PLAYER_VACUUMFRICTION = 0.1;
 const PLAYER_ACCEL = 0.00005;
 
-const STAR_COUNT = 500;
-const STAR_WIDTH = 0.15;
-const STAR_DEPTH_MIN = 1;
-const STAR_DEPTH_MAX = 10;
+const STAR_COUNT = 750;
+const STAR_WIDTH = 0.2;
+const STAR_DEPTH_MIN = 0;
+const STAR_DEPTH_MAX = 7;
 
 @Injectable()
 export class GameStateService {
@@ -47,8 +47,8 @@ export class GameStateService {
         });
         Runner.run(this.runner, this.engine);
 
-        this.player = this.initPlayer();
         this._stars = this.initStars();
+        this.player = this.initPlayer();
         this.initControls();
         this.initCollisionDetection();
 
@@ -103,11 +103,15 @@ export class GameStateService {
                 {
                     frictionAir: 0,
                     collisionFilter: { category: COLLISION_CAT_STARS, mask: 0 },
+                    render: {
+                        fillStyle: 'white',
+                        opacity: 1 / (STAR_DEPTH_MAX - (depth - 1)),
+                    },
                 }
             );
 
             Body.setVelocity(star, {
-                x: depth * -0.1,
+                x: depth * -0.05,
                 y: 0,
             });
 

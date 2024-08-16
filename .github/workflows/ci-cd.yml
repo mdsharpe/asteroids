@@ -41,15 +41,16 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: '8.x'
 
       - name: dotnet publish
-        run: dotnet publish -c Release
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
         working-directory: src/AsteroidHub
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: "app-asteroids"
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: src/AsteroidHub/bin/Release/net8.0
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7EB4568519894F02890C013E4A726053 }}
+          package: ${{env.DOTNET_ROOT}}/myapp

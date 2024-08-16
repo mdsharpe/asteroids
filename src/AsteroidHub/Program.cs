@@ -16,7 +16,7 @@ app.UseHttpsRedirection();
 
 app.UseCors(o =>
 {
-    o.WithOrigins("https://delightful-hill-0a63cb603.5.azurestaticapps.net/");
+    o.WithOrigins("http://localhost:4200", "https://delightful-hill-0a63cb603.5.azurestaticapps.net/");
     //o.AllowAnyOrigin();
     o.AllowAnyHeader();
     o.AllowAnyMethod();

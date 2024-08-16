@@ -365,7 +365,7 @@ export class GameStateService {
                 },
                 render: {
                     sprite: {
-                        texture: texture,
+                        texture: randomTexture,
                         xScale: xScale,
                         yScale: yScale,
                     },

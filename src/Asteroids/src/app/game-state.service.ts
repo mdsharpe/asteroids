@@ -97,9 +97,9 @@ export class GameStateService {
 
         this.playerAlive.subscribe((alive) => {
             if (alive) {
-                this.player.frictionAir = PLAYER_VACUUMFRICTION;
+                player.frictionAir = PLAYER_VACUUMFRICTION;
             } else {
-                this.player.frictionAir = PLAYER_VACUUMFRICTION_DEAD;
+                player.frictionAir = PLAYER_VACUUMFRICTION_DEAD;
             }
         });
 

@@ -61,6 +61,11 @@ export class GameStateService {
         this.initCollisionDetection();
 
         window.setInterval(() => {
+            const asteroid = this.createAsteroid();
+            Composite.add(this.engine.world, [asteroid]);
+        }, 500);
+
+        window.setInterval(() => {
             this.cleanup();
         }, 1000);
 
@@ -243,7 +248,7 @@ export class GameStateService {
         Events.on(this.engine, 'collisionStart', handler);
     }
 
-    public createAsteroid(serverModel: any): Body {
+    public createAsteroid(serverModel?: any): Body {
         debugger;
         const asteroidTextures = [
             './media/asteroid1.svg',
@@ -269,8 +274,8 @@ export class GameStateService {
         }
 
         const asteroid = Bodies.circle(
-            serverModel.horizontalPos,
-            serverModel.verticalPos,
+            150,//serverModel.horizontalPos,
+            Math.random() * 100,//serverModel.verticalPos,
             ASTEROID_WIDTH,
             {
                 frictionAir: 0,
@@ -290,15 +295,23 @@ export class GameStateService {
 
         if (randomTexture === '.media/enable2.png') {
             Body.setVelocity(asteroid, {
-                x: -0.5,
-                y: serverModel.velocityY,
+                x: Math.random() * -1 - 1,
+                y: Math.random() * 1 - 0.5,
             });
+            // Body.setVelocity(asteroid, {
+            //     x: -0.5,
+            //     y: serverModel.velocityY,
+            // });
         }
         else {
             Body.setVelocity(asteroid, {
-                x: serverModel.velocityX,
-                y: serverModel.velocityY,
+                x: Math.random() * -1 - 1,
+                y: Math.random() * 1 - 0.5,
             });
+            // Body.setVelocity(asteroid, {
+            //     x: serverModel.velocityX,
+            //     y: serverModel.velocityY,
+            // });
         }
 
         Body.setAngle(asteroid, Math.random() * 2 * Math.PI);

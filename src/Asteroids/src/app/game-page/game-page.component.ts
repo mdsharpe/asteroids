@@ -50,8 +50,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     @HostListener('window:resize', ['$event'])
     public onResize(evt: Event): void {
-        console.log('resize');
-
         this.fitToScreen();
     }
 

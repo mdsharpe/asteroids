@@ -49,5 +49,4 @@ jobs:
           skip_api_build: true
           output_location: ''
           app_location: './src/Asteroids/dist'
-          config_file_location: $GITHUB_WORKSPACE/artifact-to-upload
 

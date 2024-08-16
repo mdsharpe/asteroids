@@ -46,7 +46,7 @@ export class GameStateService {
                     { x: 0, y: -0.0001 }
                 );
             }
-            
+
             if (keysDown.has('KeyS')) {
                 Body.applyForce(
                     this.player,

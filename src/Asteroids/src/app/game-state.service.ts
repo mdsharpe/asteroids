@@ -262,7 +262,7 @@ export class GameStateService {
             y: Math.random() * 1 - 0.5,
         });
 
-        Body.setAngle(asteroid, Math.random() * 2 * Math.PI);
+        Body.setAngularVelocity(asteroid, Math.random() * 0.1 - 0.05);
 
         return asteroid;
     }

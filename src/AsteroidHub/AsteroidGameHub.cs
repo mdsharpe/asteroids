@@ -10,9 +10,8 @@ namespace AsteroidHub
                 await Clients.All.SendAsync(
                     "playerMoved",
                     player);
-        )
 
-        public async Task PlayerDead()
+        public async Task PlayerDead(
             Guid playerId) => 
                 await Clients.All.SendAsync(
                     "playerDead",

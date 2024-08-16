@@ -12,7 +12,10 @@ import { BehaviorSubject } from 'rxjs';
 
 const COLLISION_CAT_PLAYER = 0x0001;
 const COLLISION_CAT_ASTEROID = 0x0002;
-const COLLISION_CAT_WALL = 0x0003;
+
+const PLAYER_WIDTH = 10;
+const PLAYER_HEIGHT = 5;
+const PLAYAREA_HEIGHT = 100;
 
 @Injectable()
 export class GameStateService {
@@ -20,7 +23,6 @@ export class GameStateService {
     public readonly runner: Runner;
     public readonly player: Body;
     private readonly playerAlive = new BehaviorSubject<boolean>(false);
-    private readonly _walls: Body[];
 
     constructor() {
         this.engine = Engine.create({
@@ -32,7 +34,6 @@ export class GameStateService {
         Runner.run(this.runner, this.engine);
 
         this.player = this.initPlayer();
-        this._walls = this.initWalls();
         this.initControls();
         this.initCollisionDetection();
 
@@ -45,28 +46,18 @@ export class GameStateService {
     }
 
     private initPlayer(): Body {
-        const player = Bodies.rectangle(0, 45, 10, 5, {
-            frictionAir: 0.05,
-            collisionFilter: { category: COLLISION_CAT_PLAYER },
-        });
+        const player = Bodies.rectangle(
+            0,
+            PLAYAREA_HEIGHT / 2 - PLAYER_HEIGHT / 2,
+            PLAYER_WIDTH,
+            PLAYER_HEIGHT,
+            {
+                frictionAir: 0.05,
+                collisionFilter: { category: COLLISION_CAT_PLAYER },
+            }
+        );
         Composite.add(this.engine.world, [player]);
         return player;
-    }
-
-    private initWalls(): Body[] {
-        const createWall = (y: number) => {
-            return Bodies.rectangle(0, y, 1000, 1, {
-                isStatic: true,
-                collisionFilter: {
-                    category: COLLISION_CAT_WALL,
-                    mask: COLLISION_CAT_PLAYER,
-                },
-            });
-        };
-
-        const walls = [createWall(0), createWall(100)];
-        Composite.add(this.engine.world, walls);
-        return walls;
     }
 
     private initControls(): void {
@@ -78,13 +69,15 @@ export class GameStateService {
             keysDown.delete(event.code);
         });
 
-        const handler = () => {
+        const onTick = () => {
+            const player = this.player;
+
             if (keysDown.has('KeyW')) {
                 Body.applyForce(
-                    this.player,
+                    player,
                     {
-                        x: this.player.position.x,
-                        y: this.player.position.y,
+                        x: player.position.x,
+                        y: player.position.y,
                     },
                     { x: 0, y: -0.00005 }
                 );
@@ -92,21 +85,34 @@ export class GameStateService {
 
             if (keysDown.has('KeyS')) {
                 Body.applyForce(
-                    this.player,
+                    player,
                     {
-                        x: this.player.position.x,
-                        y: this.player.position.y,
+                        x: player.position.x,
+                        y: player.position.y,
                     },
                     { x: 0, y: 0.00005 }
                 );
+            }
+
+            if (player.position.y < 0) {
+                Body.setPosition(player, { x: player.position.x, y: 0 });
+                Body.setVelocity(player, { x: 0, y: 0 });
+            }
+
+            if (player.position.y > PLAYAREA_HEIGHT - PLAYER_HEIGHT) {
+                Body.setPosition(player, {
+                    x: player.position.x,
+                    y: PLAYAREA_HEIGHT - PLAYER_HEIGHT,
+                });
+                Body.setVelocity(player, { x: 0, y: 0 });
             }
         };
 
         this.playerAlive.subscribe((alive) => {
             if (alive) {
-                Events.on(this.engine, 'beforeUpdate', handler);
+                Events.on(this.engine, 'beforeUpdate', onTick);
             } else {
-                Events.off(this.engine, 'beforeUpdate', handler);
+                Events.off(this.engine, 'beforeUpdate', onTick);
             }
         });
     }
@@ -119,11 +125,7 @@ export class GameStateService {
                 return false;
             }
 
-            const playerCollidedWith = parties.find((o) => o !== this.player);
-
-            if (this._walls.some((o) => playerCollidedWith === o)) {
-                return false;
-            }
+            ///const playerCollidedWith = parties.find((o) => o !== this.player);
 
             return true;
         };

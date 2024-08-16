@@ -1,0 +1,18 @@
+<div class="menu-page">
+    <h2>Welcome to...</h2>
+    <h1>Enable Asteroids</h1>
+
+    <div class="menu-container">
+
+        <div>
+            <input type="text" [ngModel]="name$ | async" (ngModelChange)="name$.next($event)"
+                placeholder="Please enter your name">
+        </div>
+
+        <button [disabled]="(canJoin$ | async) === false" (click)="joinGame()">Join game</button>
+
+        <div>
+            <a href="leaderboard">Leaderboard</a>
+        </div>
+    </div>
+</div>

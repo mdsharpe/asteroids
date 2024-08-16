@@ -1,1 +1,18 @@
 /* You can add global styles to this file, and also import other style files */
+
+@font-face {
+    font-family: 'SPACE';
+    src: url('./assets/VeniteAdoremus-rgRBA.ttf') format('truetype');
+}
+
+* {
+    font-family: SPACE
+}
+
+.world-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}

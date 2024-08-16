@@ -7,15 +7,27 @@ import {
     Events,
     ICollisionCallback,
     Runner,
+    World,
 } from 'matter-js';
 import { BehaviorSubject } from 'rxjs';
 
 const COLLISION_CAT_PLAYER = 0x0001;
 const COLLISION_CAT_ASTEROID = 0x0002;
+const COLLISION_CAT_STARS = 0x0004;
 
 const PLAYER_WIDTH = 10;
 const PLAYER_HEIGHT = 5;
 const PLAYAREA_HEIGHT = 100;
+const PLAYAREA_MINX = -200;
+const PLAYAREA_MAXX = 200;
+
+const PLAYER_VACUUMFRICTION = 0.1;
+const PLAYER_ACCEL = 0.00005;
+
+const STAR_COUNT = 500;
+const STAR_WIDTH = 0.15;
+const STAR_DEPTH_MIN = 1;
+const STAR_DEPTH_MAX = 10;
 
 @Injectable()
 export class GameStateService {
@@ -23,23 +35,30 @@ export class GameStateService {
     public readonly runner: Runner;
     public readonly player: Body;
     private readonly playerAlive = new BehaviorSubject<boolean>(false);
+    private readonly _stars: Set<Body>;
 
     constructor() {
         this.engine = Engine.create({
             gravity: { x: 0, y: 0 },
         });
 
-        this.runner = Runner.create();
-
+        this.runner = Runner.create({
+            isFixed: true,
+        });
         Runner.run(this.runner, this.engine);
 
         this.player = this.initPlayer();
+        this._stars = this.initStars();
         this.initControls();
         this.initCollisionDetection();
 
         window.setInterval(() => {
             const asteroid = this.createAsteroid();
             Composite.add(this.engine.world, [asteroid]);
+        }, 500);
+
+        window.setInterval(() => {
+            this.cleanup();
         }, 1000);
 
         this.playerAlive.next(true);
@@ -52,7 +71,7 @@ export class GameStateService {
             PLAYER_WIDTH,
             PLAYER_HEIGHT,
             {
-                frictionAir: 0.05,
+                frictionAir: PLAYER_VACUUMFRICTION,
                 collisionFilter: { category: COLLISION_CAT_PLAYER },
             }
         );
@@ -67,6 +86,37 @@ export class GameStateService {
 
         Composite.add(this.engine.world, [player]);
         return player;
+    }
+
+    private initStars(): Set<Body> {
+        const stars = new Set<Body>();
+
+        for (let i = 0; i < STAR_COUNT; i++) {
+            const depth =
+                Math.random() * (STAR_DEPTH_MAX - STAR_DEPTH_MIN) +
+                STAR_DEPTH_MIN;
+
+            const star = Bodies.circle(
+                Math.random() * (PLAYAREA_MAXX - PLAYAREA_MINX) + PLAYAREA_MINX,
+                Math.random() * PLAYAREA_HEIGHT,
+                STAR_WIDTH,
+                {
+                    frictionAir: 0,
+                    collisionFilter: { category: COLLISION_CAT_STARS, mask: 0 },
+                }
+            );
+
+            Body.setVelocity(star, {
+                x: depth * -0.1,
+                y: 0,
+            });
+
+            stars.add(star);
+        }
+
+        Composite.add(this.engine.world, [...stars]);
+
+        return stars;
     }
 
     private initControls(): void {
@@ -88,7 +138,7 @@ export class GameStateService {
                         x: player.position.x,
                         y: player.position.y,
                     },
-                    { x: 0, y: -0.00005 }
+                    { x: 0, y: -PLAYER_ACCEL }
                 );
             }
 
@@ -99,7 +149,7 @@ export class GameStateService {
                         x: player.position.x,
                         y: player.position.y,
                     },
-                    { x: 0, y: 0.00005 }
+                    { x: 0, y: PLAYER_ACCEL }
                 );
             }
 
@@ -155,7 +205,7 @@ export class GameStateService {
     }
 
     private createAsteroid(): Body {
-        const asteroid = Bodies.circle(200, 50, 10, {
+        const asteroid = Bodies.circle(150, Math.random() * 100, 10, {
             frictionAir: 0,
             collisionFilter: {
                 category: COLLISION_CAT_ASTEROID,
@@ -164,9 +214,24 @@ export class GameStateService {
 
         Body.setVelocity(asteroid, {
             x: Math.random() * -1 - 1,
-            y: Math.random() * 2 - 1,
+            y: Math.random() * 1 - 0.5,
         });
 
         return asteroid;
+    }
+
+    private cleanup(): void {
+        this.engine.world.bodies.forEach((body) => {
+            if (body.position.x < PLAYAREA_MINX) {
+                if (this._stars.has(body)) {
+                    Body.setPosition(body, {
+                        x: PLAYAREA_MAXX,
+                        y: Math.random() * PLAYAREA_HEIGHT,
+                    });
+                } else {
+                    World.remove(this.engine.world, body);
+                }
+            }
+        });
     }
 }

@@ -1,1 +1,3 @@
-# asteroids
+# Asteroids!
+
+## A hackathon project

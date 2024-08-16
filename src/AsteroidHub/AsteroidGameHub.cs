@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace AsteroidHub
 {
-    public class AsteroidHub : Hub
+    public class AsteroidGameHub : Hub
     {
         public async Task BroadcastNewAsteroid(
             Asteroid asteroid) =>

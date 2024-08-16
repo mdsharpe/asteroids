@@ -5,8 +5,10 @@ Console.WriteLine("Hello, World!");
 
 HubConnection connection;
 connection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:7243/hub")
+                .WithUrl("http://localhost:5125/hub")
                 .Build();
+
+await connection.StartAsync();
 
 connection.Closed += async (error) =>
 {
@@ -24,3 +26,5 @@ connection.On<int, int, int, int, int, int>("newAsteroid", (
 {
     Console.WriteLine($"Asteroid = W:{width}, H:{height}, VPos:{verticalPos}, HPos:{horizontalPos}, VX:{velocityX}, VY:{velocityY}");
 });
+
+Console.Read();

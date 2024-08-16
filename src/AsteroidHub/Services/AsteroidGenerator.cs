@@ -1,29 +1,28 @@
 ﻿
 using System;
 using AsteroidHub.Models;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AsteroidHub.Services
 {
     public class AsteroidGenerator(
-        AsteroidHub hub) : IHostedService
+        IHubContext<AsteroidGameHub> hub) : BackgroundService
     {
         private readonly Random _random = new Random();
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (true)
+            while (!stoppingToken.IsCancellationRequested)
             {
                 var randFactor = _random.NextDouble();
                 if (randFactor < 0.5d)
                 {
                     await GenerateAsteroids(randFactor);
                 }
-            }
-        }
 
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
+                Thread.Sleep(2000);
+            }
         }
 
         private async Task GenerateAsteroids(double randFactor)
@@ -50,7 +49,8 @@ namespace AsteroidHub.Services
 
             foreach (var asteroid in asteroids)
             {
-                await hub.BroadcastNewAsteroid(asteroid);
+                await hub.Clients.All.SendAsync("newAsteroid", asteroid.Width, asteroid.Height, asteroid.VerticalPos, asteroid.HorizontalPos, asteroid.VelocityX, asteroid.VelocityY);
+                Console.WriteLine($"Asteroid = W:{asteroid.Width}, H:{asteroid.Height}, VPos:{asteroid.VerticalPos}, HPos:{asteroid.HorizontalPos}, VX:{asteroid.VelocityX}, VY:{asteroid.VelocityY}");
             }
         }
     }

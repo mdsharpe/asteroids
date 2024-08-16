@@ -250,6 +250,8 @@ export class GameStateService {
             y: Math.random() * 1 - 0.5,
         });
 
+        Body.setAngle(asteroid, Math.random() * 2 * Math.PI);
+
         return asteroid;
     }
 

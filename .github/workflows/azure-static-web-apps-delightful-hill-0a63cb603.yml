@@ -49,5 +49,5 @@ jobs:
           skip_api_build: true
           output_location: ''
           app_location: './src/Asteroids/dist'
-          config_file_location: './src/Asteroids/staticwebapp.config.json'
+          config_file_location: './src/Asteroids'
 

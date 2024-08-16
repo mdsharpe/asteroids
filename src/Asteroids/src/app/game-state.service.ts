@@ -18,6 +18,9 @@ const PLAYER_WIDTH = 10;
 const PLAYER_HEIGHT = 5;
 const PLAYAREA_HEIGHT = 100;
 
+const PLAYER_VACUUMFRICTION = 0.1;
+const PLAYER_ACCEL = 0.00005;
+
 @Injectable()
 export class GameStateService {
     public readonly engine: Engine;
@@ -31,7 +34,7 @@ export class GameStateService {
         });
 
         this.runner = Runner.create({
-            isFixed: true
+            isFixed: true,
         });
 
         Runner.run(this.runner, this.engine);
@@ -43,7 +46,7 @@ export class GameStateService {
         window.setInterval(() => {
             const asteroid = this.createAsteroid();
             Composite.add(this.engine.world, [asteroid]);
-        }, 1000);
+        }, 500);
 
         window.setInterval(() => {
             this.cleanup();
@@ -59,7 +62,7 @@ export class GameStateService {
             PLAYER_WIDTH,
             PLAYER_HEIGHT,
             {
-                frictionAir: 0.05,
+                frictionAir: PLAYER_VACUUMFRICTION,
                 collisionFilter: { category: COLLISION_CAT_PLAYER },
             }
         );
@@ -86,7 +89,7 @@ export class GameStateService {
                         x: player.position.x,
                         y: player.position.y,
                     },
-                    { x: 0, y: -0.00005 }
+                    { x: 0, y: -PLAYER_ACCEL }
                 );
             }
 
@@ -97,7 +100,7 @@ export class GameStateService {
                         x: player.position.x,
                         y: player.position.y,
                     },
-                    { x: 0, y: 0.00005 }
+                    { x: 0, y: PLAYER_ACCEL }
                 );
             }
 
@@ -153,7 +156,7 @@ export class GameStateService {
     }
 
     private createAsteroid(): Body {
-        const asteroid = Bodies.circle(200, 50, 10, {
+        const asteroid = Bodies.circle(150, Math.random() * 100, 10, {
             frictionAir: 0,
             collisionFilter: {
                 category: COLLISION_CAT_ASTEROID,
@@ -162,7 +165,7 @@ export class GameStateService {
 
         Body.setVelocity(asteroid, {
             x: Math.random() * -1 - 1,
-            y: Math.random() * 2 - 1,
+            y: Math.random() * 1 - 0.5,
         });
 
         return asteroid;

@@ -39,9 +39,11 @@ export class GameStateService {
     public readonly engine: Engine;
     public readonly runner: Runner;
     public readonly player: Body;
-    private readonly playerAlive = new BehaviorSubject<boolean>(false);
+    private readonly _playerAlive$ = new BehaviorSubject<boolean>(false);
     private readonly otherPlayers: Map<string, Body>;
     private readonly _stars: Set<Body>;
+
+    public readonly playerAlive$ = this._playerAlive$.asObservable();
 
     constructor() {
         this.engine = Engine.create({
@@ -62,9 +64,11 @@ export class GameStateService {
             this.cleanup();
         }, 1000);
 
-        this.playerAlive.next(true);
-
         this.otherPlayers = new Map<string, Body>();
+    }
+
+    public startLocalPlayer(): void {
+        this._playerAlive$.next(true);
     }
 
     private initPlayer(isOtherPlayer: boolean): Body {
@@ -91,9 +95,13 @@ export class GameStateService {
             Body.setAngle(player, Math.PI / 2);
         }
 
-        this.playerAlive.subscribe((alive) => {
+        this._playerAlive$.subscribe((alive) => {
             if (alive) {
                 player.frictionAir = PLAYER_VACUUMFRICTION;
+                Body.setVelocity(player, { x: 0, y: 0 });
+                Body.setPosition(player, { x: 0, y: PLAYAREA_HEIGHT / 2 });
+                Body.setAngle(player, Math.PI / 2);
+                Body.setAngularSpeed(player, 0);
             } else {
                 player.frictionAir = PLAYER_VACUUMFRICTION_DEAD;
             }
@@ -200,7 +208,7 @@ export class GameStateService {
             }
         };
 
-        this.playerAlive.subscribe((alive) => {
+        this._playerAlive$.subscribe((alive) => {
             if (alive) {
                 Events.on(this.engine, 'beforeUpdate', onTick);
             } else {
@@ -224,7 +232,7 @@ export class GameStateService {
 
         const handler: ICollisionCallback = (evt) => {
             if (evt.pairs.some(isPlayerDamagingCollision)) {
-                this.playerAlive.next(false);
+                this._playerAlive$.next(false);
 
                 window.setTimeout(() => {
                     this.addExplosion(this.player.position);

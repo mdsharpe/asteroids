@@ -228,6 +228,8 @@ export class GameStateService {
             './media/asteroid3.svg',
             './media/asteroid4.svg',
             './media/asteroid5.svg',
+            './media/enable1.png',
+            './media/enable2.png',
         ];
         const randomTexture =
             asteroidTextures[
@@ -237,6 +239,11 @@ export class GameStateService {
         // Set default scales
         let xScale = 0.1;
         let yScale = 0.1;
+
+        if (randomTexture === './media/enable1.png' || randomTexture === './media/enable2.png') {
+            xScale = 0.015;
+            yScale = 0.015;
+        }
 
         const asteroid = Bodies.circle(
             150,
@@ -257,12 +264,22 @@ export class GameStateService {
             }
         );
 
-        Body.setVelocity(asteroid, {
-            x: Math.random() * -1 - 1,
-            y: Math.random() * 1 - 0.5,
-        });
+        if (randomTexture === '.media/enable2.png') {
+            Body.setVelocity(asteroid, {
+                x: -0.05,
+                y: Math.random() * 1 - 0.5,
+            });
+        }
+        else {
+            Body.setVelocity(asteroid, {
+                x: Math.random() * -1 - 1,
+                y: Math.random() * 1 - 0.5,
+            });
+        }
 
-        Body.setAngle(asteroid, Math.random() * 2 * Math.PI);
+        if (randomTexture !== './media/enable1.png' && randomTexture !== './media/enable2.png') {
+            Body.setAngle(asteroid, Math.random() * 2 * Math.PI);
+        }
 
         return asteroid;
     }

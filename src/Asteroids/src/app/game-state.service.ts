@@ -13,6 +13,12 @@ import {
 } from 'matter-js';
 import { BehaviorSubject } from 'rxjs';
 import { AsteroidSignalRModel } from './models';
+import { environment } from '../environments/environment';
+import {
+    HubConnection,
+    HubConnectionBuilder,
+    LogLevel,
+} from '@microsoft/signalr';
 
 const COLLISION_CAT_PARTICLES = 0x0001;
 const COLLISION_CAT_PLAYER = 0x0002;
@@ -67,11 +73,32 @@ export class GameStateService {
         }, 1000);
 
         this.otherPlayers = new Map<string, Body>();
+
+        const connection = new HubConnectionBuilder()
+            .withUrl(`${environment.signalRBaseUri}/hub`)
+            .configureLogging(LogLevel.Information)
+            .build();
+
+        connection.on('newAsteroid', (asteroid) => this.createAsteroid(asteroid));
+        connection.on('playerMoved', (player) =>
+            this.handleOtherPlayer(player)
+        );
+
+        connection.start().then(() => {
+            console.log("connectionstate: ", this._hubConnection.state);
+
+            //// Simulate locally other players
+            this.spawnPlayer();
+        });
+
+        this._hubConnection = connection;
     }
 
     public startLocalPlayer(): void {
         this._playerAlive$.next(true);
     }
+
+    private _hubConnection: HubConnection;
 
     private initPlayer(isOtherPlayer: boolean): Body {
         const collisionFilter: ICollisionFilter =
@@ -165,6 +192,7 @@ export class GameStateService {
             if (this.otherPlayers.has(otherPlayer.id)) {
                 let existingPlayer = this.otherPlayers.get(otherPlayer.id);
                 existingPlayer!.position.y = otherPlayer.yPos;
+                existingPlayer!.position.x = otherPlayer.xPos;
             } else {
                 const player = this.initPlayer(true);
                 this.otherPlayers.set(otherPlayer.id, player);
@@ -219,6 +247,12 @@ export class GameStateService {
                 });
                 Body.setVelocity(player, { x: 0, y: 0 });
             }
+
+            this._hubConnection.send('broadcastPlayer', {
+                id: this.player.id,
+                yPos: this.player.position.y,
+                xPos: this.player.position.x
+            });
         };
 
         this._playerAlive$.subscribe((alive) => {
@@ -363,6 +397,22 @@ export class GameStateService {
                     World.remove(this.engine.world, body);
                 }
             }
+        });
+    }
+
+    private spawnPlayer(): void {
+        console.log("Spawning");
+        this._hubConnection.send('broadcastPlayer', {
+            id: this.generateGuid(),
+            yPos: Math.random() * 50
+        });
+    }
+
+    private generateGuid(): string {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r: number = (Math.random() * 16) | 0;
+            const v: number = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
         });
     }
 }

@@ -34,13 +34,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
             engine: this._state.engine,
             options: {
                 wireframes: false,
-                showAxes: true,
                 hasBounds: true,
-                showBounds: true,
-                showAngleIndicator: true,
-                showCollisions: true,
-                showInternalEdges: true,
-                showVelocity: true,
                 showStats: true,
                 showDebug: true,
             },

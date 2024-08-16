@@ -1,10 +1,24 @@
-import { Injectable } from "@angular/core";
-import { BehaviorSubject } from "rxjs";
-import { GameState } from "./game-state";
+import { Injectable } from '@angular/core';
+import { Bodies, Body, Composite, Engine, Runner } from 'matter-js';
 
 @Injectable()
 export class GameStateService {
-    private readonly _gameState = new BehaviorSubject<GameState>(new GameState());
+    public readonly engine: Engine;
+    public readonly runner: Runner;
 
-    public readonly state = this._gameState.asObservable();
+    constructor() {
+        this.engine = Engine.create();
+        this.engine.gravity.y = 0;
+
+        this.runner = Runner.create();
+        Runner.run(this.runner, this.engine);
+
+        window.setInterval(() => {
+            var asteroid = Bodies.rectangle(400, 200, 80, 80);
+            Body.setVelocity(asteroid, { x: -3, y: 2 });
+            asteroid.frictionAir = 0;
+
+            Composite.add(this.engine.world, [asteroid]);
+        }, 1000);
+    }
 }

@@ -11,11 +11,8 @@ namespace AsteroidHub.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            logger.LogCritical("Executing task");
-
             while (!stoppingToken.IsCancellationRequested)
             {
-                logger.LogCritical("Entering loop iteration");
                 var randFactor = _random.NextDouble();
 
                 var delay = Task.Delay(Interval, stoppingToken);
@@ -57,7 +54,6 @@ namespace AsteroidHub.Services
             {
                 await hub.Clients.All.SendAsync("newAsteroid", asteroid.Width, asteroid.Height, asteroid.VerticalPos, asteroid.HorizontalPos, asteroid.VelocityX, asteroid.VelocityY, stoppingToken);
                 var logmsg = $"Asteroid = W:{asteroid.Width}, H:{asteroid.Height}, VPos:{asteroid.VerticalPos}, HPos:{asteroid.HorizontalPos}, VX:{asteroid.VelocityX}, VY:{asteroid.VelocityY}";
-                logger.LogWarning(logmsg);
             }
         }
     }

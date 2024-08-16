@@ -24,7 +24,7 @@ const PLAYAREA_MAXX = 200;
 
 const PLAYER_VACUUMFRICTION = 0.1;
 const PLAYER_VACUUMFRICTION_DEAD = 0.02;
-const PLAYER_ACCEL = 0.00005;
+const PLAYER_ACCEL = 0.00003;
 
 const ASTEROID_WIDTH = 5;
 
@@ -39,6 +39,7 @@ export class GameStateService {
     public readonly runner: Runner;
     public readonly player: Body;
     private readonly playerAlive = new BehaviorSubject<boolean>(false);
+    private readonly otherPlayers: Map<string, Body>;
     private readonly _stars: Set<Body>;
 
     constructor() {
@@ -51,8 +52,8 @@ export class GameStateService {
         });
         Runner.run(this.runner, this.engine);
 
+        this.player = this.initPlayer(false);
         this._stars = this.initStars();
-        this.player = this.initPlayer();
         this.initControls();
         this.initCollisionDetection();
 
@@ -66,9 +67,11 @@ export class GameStateService {
         }, 1000);
 
         this.playerAlive.next(true);
+
+        this.otherPlayers = new Map<string, Body>();
     }
 
-    private initPlayer(): Body {
+    private initPlayer(isOtherPlayer: boolean): Body {
         var player = Bodies.rectangle(
             0,
             PLAYAREA_HEIGHT / 2 - PLAYER_HEIGHT / 2,
@@ -85,14 +88,18 @@ export class GameStateService {
             player.render.sprite.xScale = 0.07;
             player.render.sprite.yScale = 0.07;
 
+            if (isOtherPlayer) {
+                player.render.opacity = 0.5;
+            }
+
             Body.setAngle(player, Math.PI / 2);
         }
 
         this.playerAlive.subscribe((alive) => {
             if (alive) {
-                this.player.frictionAir = PLAYER_VACUUMFRICTION;
+                player.frictionAir = PLAYER_VACUUMFRICTION;
             } else {
-                this.player.frictionAir = PLAYER_VACUUMFRICTION_DEAD;
+                player.frictionAir = PLAYER_VACUUMFRICTION_DEAD;
             }
         });
 
@@ -136,6 +143,17 @@ export class GameStateService {
         Composite.add(this.engine.world, [...stars]);
 
         return stars;
+    }
+
+    public handleOtherPlayer(otherPlayer: any) {
+        if (this.otherPlayers.has(otherPlayer.id)) {
+            let existingPlayer = this.otherPlayers.get(otherPlayer.id);
+            existingPlayer!.position.y = otherPlayer.yPos
+        }
+        else {
+            const player = this.initPlayer(true);
+            this.otherPlayers.set(otherPlayer.id, player);
+        }
     }
 
     private initControls(): void {
@@ -262,7 +280,7 @@ export class GameStateService {
             y: Math.random() * 1 - 0.5,
         });
 
-        Body.setAngle(asteroid, Math.random() * 2 * Math.PI);
+        Body.setAngularVelocity(asteroid, Math.random() * 0.1 - 0.05);
 
         return asteroid;
     }

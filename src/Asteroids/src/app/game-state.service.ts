@@ -18,6 +18,8 @@ const COLLISION_CAT_STARS = 0x0004;
 const PLAYER_WIDTH = 10;
 const PLAYER_HEIGHT = 5;
 const PLAYAREA_HEIGHT = 100;
+const PLAYAREA_MINX = -200;
+const PLAYAREA_MAXX = 200;
 
 const PLAYER_VACUUMFRICTION = 0.1;
 const PLAYER_ACCEL = 0.00005;
@@ -43,7 +45,6 @@ export class GameStateService {
         this.runner = Runner.create({
             isFixed: true,
         });
-
         Runner.run(this.runner, this.engine);
 
         this.player = this.initPlayer();
@@ -87,14 +88,12 @@ export class GameStateService {
                 STAR_DEPTH_MIN;
 
             const star = Bodies.circle(
-                Math.random() * 200,
+                Math.random() * (PLAYAREA_MAXX - PLAYAREA_MINX) + PLAYAREA_MINX,
                 Math.random() * PLAYAREA_HEIGHT,
                 STAR_WIDTH,
                 {
                     frictionAir: 0,
-                    collisionFilter: { category: COLLISION_CAT_STARS,
-                        mask: 0
-                     },
+                    collisionFilter: { category: COLLISION_CAT_STARS, mask: 0 },
                 }
             );
 
@@ -214,8 +213,15 @@ export class GameStateService {
 
     private cleanup(): void {
         this.engine.world.bodies.forEach((body) => {
-            if (body.position.x < -200) {
-                World.remove(this.engine.world, body);
+            if (body.position.x < PLAYAREA_MINX) {
+                if (this._stars.has(body)) {
+                    Body.setPosition(body, {
+                        x: PLAYAREA_MAXX,
+                        y: Math.random() * PLAYAREA_HEIGHT,
+                    });
+                } else {
+                    World.remove(this.engine.world, body);
+                }
             }
         });
     }

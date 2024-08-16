@@ -205,11 +205,31 @@ export class GameStateService {
     }
 
     private createAsteroid(): Body {
+        const asteroidTextures = [
+            './media/asteroid1.svg',
+            './media/asteroid2.svg',
+            './media/asteroid3.svg',
+            './media/asteroid4.svg',
+            './media/asteroid5.svg',
+        ];
+        const randomTexture = asteroidTextures[Math.floor(Math.random() * asteroidTextures.length)];
+
+        // Set default scales
+        let xScale = 0.1;
+        let yScale = 0.1;
+
         const asteroid = Bodies.circle(150, Math.random() * 100, 10, {
             frictionAir: 0,
             collisionFilter: {
                 category: COLLISION_CAT_ASTEROID,
             },
+            render: {
+                sprite: {
+                    texture: randomTexture,
+                    xScale: xScale,
+                    yScale: yScale,
+                }
+            }
         });
 
         Body.setVelocity(asteroid, {

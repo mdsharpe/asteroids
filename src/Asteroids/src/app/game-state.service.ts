@@ -12,7 +12,7 @@ import {
     World,
 } from 'matter-js';
 import { BehaviorSubject } from 'rxjs';
-import { AsteroidSignalRModel } from './models';
+import { GamePhase } from './game-phase';
 import { environment } from '../environments/environment';
 import {
     HubConnection,
@@ -54,6 +54,8 @@ export class GameStateService {
     private readonly _stars: Set<Body>;
 
     public readonly playerAlive$ = this._playerAlive$.asObservable();
+
+    public readonly gamePhase$ = new BehaviorSubject<GamePhase>(GamePhase.none);
 
     constructor() {
         this.engine = Engine.create({
@@ -97,6 +99,7 @@ export class GameStateService {
     }
 
     public startLocalPlayer(): void {
+        this.gamePhase$.next(GamePhase.earlyGame);
         this._playerAlive$.next(true);
     }
 
@@ -334,13 +337,19 @@ export class GameStateService {
             './media/enable1.png',
             './media/enable2.png',
         ];
-        const texture = asteroidTextures[serverModel.graphicNumber];
+        const randomTexture =
+            asteroidTextures[
+                Math.floor(Math.random() * asteroidTextures.length)
+            ];
 
         // Set default scales
         let xScale = 0.1;
         let yScale = 0.1;
 
-        if (texture === './media/enable1.png' || texture === './media/enable2.png') {
+        if (
+            randomTexture === './media/enable1.png' ||
+            randomTexture === './media/enable2.png'
+        ) {
             xScale = 0.015;
             yScale = 0.015;
         }
@@ -365,13 +374,12 @@ export class GameStateService {
         );
 
 
-        if (texture === '.media/enable2.png') {
+        if (randomTexture === '.media/enable2.png') {
             Body.setVelocity(asteroid, {
                 x: -0.5,
                 y: serverModel.velocityY,
             });
-        }
-        else {
+        } else {
             Body.setVelocity(asteroid, {
                 x: serverModel.velocityX,
                 y: serverModel.velocityY,
@@ -396,7 +404,7 @@ export class GameStateService {
                 render: {
                     fillStyle:
                         explosionColors[
-                        Math.floor(Math.random() * explosionColors.length)
+                            Math.floor(Math.random() * explosionColors.length)
                         ],
                 },
             });

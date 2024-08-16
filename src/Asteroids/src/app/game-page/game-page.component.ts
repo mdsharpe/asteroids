@@ -8,9 +8,9 @@ import {
     ViewChild,
 } from '@angular/core';
 import { Render } from 'matter-js';
+import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 
 import { GameStateService } from '../game-state.service';
-import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 
 @Component({
     selector: 'app-game-page',
@@ -23,7 +23,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     private readonly _state = inject(GameStateService);
 
     private _render: Matter.Render | null = null;
-    private _onBeforeTick: (() => void) | null = null;
 
     @ViewChild('worldContainer', { static: true })
     private _worldContainer!: ElementRef<HTMLElement>;
@@ -57,13 +56,14 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.fitToScreen();
     }
 
+    // TODO [MW] Do this in game state service
     private async initSignalRConnection(): Promise<void> {
         const connection = new HubConnectionBuilder()
-            .withUrl("https://localhost:5127/hub")
+            .withUrl('https://localhost:5127/hub')
             .configureLogging(LogLevel.Information)
             .build();
 
-        connection.on('newAsteroid', _ => console.log('new asteroid'));
+        connection.on('newAsteroid', (_) => console.log('new asteroid'));
 
         connection.start();
     }

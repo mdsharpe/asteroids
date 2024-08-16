@@ -7,6 +7,7 @@ import {
     Events,
     ICollisionCallback,
     Runner,
+    World,
 } from 'matter-js';
 import { BehaviorSubject } from 'rxjs';
 
@@ -40,6 +41,10 @@ export class GameStateService {
         window.setInterval(() => {
             const asteroid = this.createAsteroid();
             Composite.add(this.engine.world, [asteroid]);
+        }, 1000);
+
+        window.setInterval(() => {
+            this.cleanup();
         }, 1000);
 
         this.playerAlive.next(true);
@@ -159,5 +164,13 @@ export class GameStateService {
         });
 
         return asteroid;
+    }
+
+    private cleanup(): void {
+        this.engine.world.bodies.forEach((body) => {
+            if (body.position.x < -200) {
+                World.remove(this.engine.world, body);
+            }
+        });
     }
 }

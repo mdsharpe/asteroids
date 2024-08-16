@@ -79,8 +79,8 @@ export class GameStateService {
 
         if (player.render.sprite) {
             player.render.sprite.texture = './media/rocketship.svg';
-            player.render.sprite.xScale = 0.08;
-            player.render.sprite.yScale = 0.08;
+            player.render.sprite.xScale = 0.07;
+            player.render.sprite.yScale = 0.07;
 
             Body.setAngle(player, Math.PI / 2);
         }

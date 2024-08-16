@@ -254,16 +254,10 @@ export class GameStateService {
             }
         );
 
-        Body.setVelocity(
-            asteroid,
-            Vector.add(
-                {
-                    x: Math.random() * -1 - 1,
-                    y: Math.random() * 1 - 0.5,
-                },
-                this.player.velocity
-            )
-        );
+        Body.setVelocity(asteroid, {
+            x: Math.random() * -1 - 1,
+            y: Math.random() * 1 - 0.5,
+        });
 
         Body.setAngle(asteroid, Math.random() * 2 * Math.PI);
 
@@ -288,10 +282,16 @@ export class GameStateService {
                 },
             });
 
-            Body.setVelocity(explosion, {
-                x: Math.random() * -3,
-                y: Math.random() * 0.5 - 0.25,
-            });
+            Body.setVelocity(
+                explosion,
+                Vector.add(
+                    {
+                        x: Math.random() * -3,
+                        y: Math.random() * 0.5 - 0.25,
+                    },
+                    this.player.velocity
+                )
+            );
 
             Composite.add(this.engine.world, [explosion]);
         }

@@ -6,6 +6,7 @@ import {
     Engine,
     Events,
     ICollisionCallback,
+    ICollisionFilter,
     Runner,
     Vector,
     World,
@@ -16,6 +17,7 @@ import { AsteroidSignalRModel } from './models';
 const COLLISION_CAT_PARTICLES = 0x0001;
 const COLLISION_CAT_PLAYER = 0x0002;
 const COLLISION_CAT_ASTEROID = 0x0004;
+const COLLISION_CAT_OTHERPLAYER = 0x0008;
 
 const PLAYER_WIDTH = 10;
 const PLAYER_HEIGHT = 5;
@@ -68,6 +70,14 @@ export class GameStateService {
     }
 
     private initPlayer(isOtherPlayer: boolean): Body {
+        const collisionFilter: ICollisionFilter =
+            isOtherPlayer ? {
+                category: COLLISION_CAT_OTHERPLAYER,
+                mask: 0
+            }
+                :
+                { category: COLLISION_CAT_PLAYER };
+
         var player = Bodies.rectangle(
             0,
             PLAYAREA_HEIGHT / 2 - PLAYER_HEIGHT / 2,
@@ -75,7 +85,7 @@ export class GameStateService {
             PLAYER_WIDTH, // Height set to width because we rotate after creation
             {
                 frictionAir: PLAYER_VACUUMFRICTION,
-                collisionFilter: { category: COLLISION_CAT_PLAYER },
+                collisionFilter: collisionFilter,
             }
         );
 
@@ -142,13 +152,16 @@ export class GameStateService {
     }
 
     public handleOtherPlayer(otherPlayer: any) {
-        if (this.otherPlayers.has(otherPlayer.id)) {
-            let existingPlayer = this.otherPlayers.get(otherPlayer.id);
-            existingPlayer!.position.y = otherPlayer.yPos;
-        } else {
-            const player = this.initPlayer(true);
-            this.otherPlayers.set(otherPlayer.id, player);
-            console.log("add player: ", otherPlayer.id);
+        console.log("handle: ", otherPlayer);
+        if (otherPlayer.id != this.player.id) {
+            if (this.otherPlayers.has(otherPlayer.id)) {
+                let existingPlayer = this.otherPlayers.get(otherPlayer.id);
+                existingPlayer!.position.y = otherPlayer.yPos;
+            } else {
+                const player = this.initPlayer(true);
+                this.otherPlayers.set(otherPlayer.id, player);
+                console.log("add player: ", otherPlayer.id);
+            }
         }
     }
 

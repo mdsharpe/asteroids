@@ -40,8 +40,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
         connection.start().then(() => {
             console.log("connectionstate: ", this._hubConnection.state);
 
-            // Simulate locallyu other players
-            //// this.spawnPlayer();
+            //// Simulate locallyu other players
+            //this.spawnPlayer();
         });
 
         this._hubConnection = connection;
@@ -145,7 +145,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         console.log("Spawning");
         this._hubConnection.send('broadcastPlayer', {
             id: this.generateGuid(),
-            yPos: Math.random() * 5
+            yPos: Math.random() * 50
         });
     }
 

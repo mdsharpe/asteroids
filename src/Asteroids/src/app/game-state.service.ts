@@ -52,8 +52,8 @@ export class GameStateService {
         });
         Runner.run(this.runner, this.engine);
 
-        this.player = this.initPlayer(false);
         this._stars = this.initStars();
+        this.player = this.initPlayer(false);
         this.initControls();
         this.initCollisionDetection();
 

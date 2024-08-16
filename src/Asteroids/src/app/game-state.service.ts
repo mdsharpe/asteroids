@@ -30,7 +30,9 @@ export class GameStateService {
             gravity: { x: 0, y: 0 },
         });
 
-        this.runner = Runner.create();
+        this.runner = Runner.create({
+            isFixed: true
+        });
 
         Runner.run(this.runner, this.engine);
 

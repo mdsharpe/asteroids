@@ -35,15 +35,16 @@ namespace AsteroidHub.Services
             {
                 var verticalPos = i * randFactor * 100;
                 var horizontalPos = 110;
-                var velocityx = _random.Next(-10, -1);
-                var velocityy = 0;// _random.Next(1, 10);
+                var velocityx = _random.Next(-3, -1);
+                var velocityy = _random.Next(-2, 2);
 
                 asteroids.Add(
                     new Asteroid(
                         (int)verticalPos,
                         horizontalPos,
                         velocityx,
-                        velocityy));
+                        velocityy,
+                        _random.Next(0, 6)));
             }
 
             foreach (var asteroid in asteroids)

@@ -29,6 +29,8 @@ const PLAYER_WIDTH = 10;
 const PLAYER_HEIGHT = 5;
 const PLAYAREA_HEIGHT = 100;
 const PLAYAREA_MINX = -200;
+const PLAYER_MINX = -60;
+const PLAYER_MAXX = 110;
 const PLAYAREA_MAXX = 200;
 
 const PLAYER_VACUUMFRICTION = 0.1;
@@ -235,6 +237,28 @@ export class GameStateService {
                 );
             }
 
+            if (keysDown.has('KeyA')) {
+                Body.applyForce(
+                    player,
+                    {
+                        x: player.position.x,
+                        y: player.position.y,
+                    },
+                    { x: -PLAYER_ACCEL, y: 0 }
+                );
+            }
+
+            if (keysDown.has('KeyD')) {
+                Body.applyForce(
+                    player,
+                    {
+                        x: player.position.x,
+                        y: player.position.y,
+                    },
+                    { x: PLAYER_ACCEL, y: 0 }
+                );
+            }
+
             if (player.position.y < 0) {
                 Body.setPosition(player, { x: player.position.x, y: 0 });
                 Body.setVelocity(player, { x: 0, y: 0 });
@@ -245,6 +269,16 @@ export class GameStateService {
                     x: player.position.x,
                     y: PLAYAREA_HEIGHT - PLAYER_HEIGHT,
                 });
+                Body.setVelocity(player, { x: 0, y: 0 });
+            }
+
+            if (player.position.x < PLAYER_MINX) {
+                Body.setPosition(player, { x: PLAYER_MINX, y: player.position.y });
+                Body.setVelocity(player, { x: 0, y: 0 });
+            }
+
+            if (player.position.x > PLAYER_MAXX) {
+                Body.setPosition(player, { x: PLAYER_MAXX, y: player.position.y });
                 Body.setVelocity(player, { x: 0, y: 0 });
             }
 
@@ -300,16 +334,13 @@ export class GameStateService {
             './media/enable1.png',
             './media/enable2.png',
         ];
-        const randomTexture =
-            asteroidTextures[
-            Math.floor(Math.random() * asteroidTextures.length)
-            ];
+        const texture = asteroidTextures[serverModel.graphicNumber];
 
         // Set default scales
         let xScale = 0.1;
         let yScale = 0.1;
 
-        if (randomTexture === './media/enable1.png' || randomTexture === './media/enable2.png') {
+        if (texture === './media/enable1.png' || texture === './media/enable2.png') {
             xScale = 0.015;
             yScale = 0.015;
         }
@@ -325,7 +356,7 @@ export class GameStateService {
                 },
                 render: {
                     sprite: {
-                        texture: randomTexture,
+                        texture: texture,
                         xScale: xScale,
                         yScale: yScale,
                     },
@@ -334,7 +365,7 @@ export class GameStateService {
         );
 
 
-        if (randomTexture === '.media/enable2.png') {
+        if (texture === '.media/enable2.png') {
             Body.setVelocity(asteroid, {
                 x: -0.5,
                 y: serverModel.velocityY,

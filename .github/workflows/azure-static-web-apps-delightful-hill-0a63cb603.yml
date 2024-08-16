@@ -30,7 +30,7 @@ jobs:
 
       - name: Build
         shell: pwsh
-        working-directory: ./src/Asteroids
+        working-directory: src/Asteroids
         run: npm run build
 
       - uses: Azure/static-web-apps-deploy@v1

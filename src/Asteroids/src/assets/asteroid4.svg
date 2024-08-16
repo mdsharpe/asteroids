@@ -1,0 +1,17 @@
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Asteroid 4 -->
+  <path d="
+    M 100,50 
+    C 125,55 145,70 150,95 
+    C 155,115 130,135 105,140 
+    C 85,145 55,120 50,95 
+    C 45,70 75,55 95,50 
+    C 105,50 100,50 100,50 
+    Z" 
+    fill="grey" stroke="black" stroke-width="2"/>
+  
+  <!-- Ovals inside Asteroid 4 -->
+  <ellipse cx="110" cy="80" rx="8" ry="4" fill="darkgrey"/>
+  <ellipse cx="90" cy="110" rx="9" ry="5" fill="darkgrey"/>
+  <ellipse cx="125" cy="120" rx="7" ry="3" fill="darkgrey"/>
+</svg>

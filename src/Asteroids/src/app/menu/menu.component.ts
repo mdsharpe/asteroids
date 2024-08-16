@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { BehaviorSubject, map } from 'rxjs';
 
 @Component({
@@ -11,6 +12,8 @@ import { BehaviorSubject, map } from 'rxjs';
     styleUrl: './menu.component.scss'
 })
 export class MenuComponent implements OnInit {
+    constructor(private readonly _router: Router) { }
+
     public readonly name$ = new BehaviorSubject('');
 
     public canJoin$ = this.name$.pipe(map(name => !!name));
@@ -29,7 +32,7 @@ export class MenuComponent implements OnInit {
             return;
         }
 
-        debugger;
         localStorage.setItem('playerName', this.name$.value);
+        this._router.navigateByUrl('play');
     }
 }

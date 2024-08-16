@@ -29,24 +29,22 @@ import { distinctUntilChanged, map } from 'rxjs';
 })
 export class GamePageComponent implements OnInit, OnDestroy {
     constructor() {
-        const connection = new HubConnectionBuilder()
+        this._hubConnection = new HubConnectionBuilder()
             .withUrl(`${environment.signalRBaseUri}/hub`)
             .configureLogging(LogLevel.Information)
             .build();
 
-        connection.on('newAsteroid', (asteroid) => this._state.createAsteroid(asteroid));
-        connection.on('playerMoved', (player) =>
+        this._hubConnection.on('newAsteroid', (asteroid) => this._state.createAsteroid(asteroid));
+        this._hubConnection.on('playerMoved', (player) =>
             this._state.handleOtherPlayer(player)
         );
 
-        connection.start().then(() => {
+        this._hubConnection.start().then(() => {
             console.log("connectionstate: ", this._hubConnection.state);
 
             //// Simulate locallyu other players
             //this.spawnPlayer();
         });
-
-        this._hubConnection = connection;
     }
 
     private readonly _state = inject(GameStateService);
@@ -55,10 +53,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
     private _render: Matter.Render | null = null;
 
     public readonly showingRestartButton$ = this._state.playerAlive$
-    .pipe(
-        map((isAlive) => !isAlive),
-        distinctUntilChanged()
-    );
+        .pipe(
+            map((isAlive) => !isAlive),
+            distinctUntilChanged()
+        );
 
     @ViewChild('worldContainer', { static: true })
     private _worldContainer!: ElementRef<HTMLElement>;

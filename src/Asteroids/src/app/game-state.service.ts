@@ -300,16 +300,13 @@ export class GameStateService {
             './media/enable1.png',
             './media/enable2.png',
         ];
-        const randomTexture =
-            asteroidTextures[
-            Math.floor(Math.random() * asteroidTextures.length)
-            ];
+        const texture = asteroidTextures[serverModel.graphicNumber];
 
         // Set default scales
         let xScale = 0.1;
         let yScale = 0.1;
 
-        if (randomTexture === './media/enable1.png' || randomTexture === './media/enable2.png') {
+        if (texture === './media/enable1.png' || texture === './media/enable2.png') {
             xScale = 0.015;
             yScale = 0.015;
         }
@@ -325,7 +322,7 @@ export class GameStateService {
                 },
                 render: {
                     sprite: {
-                        texture: randomTexture,
+                        texture: texture,
                         xScale: xScale,
                         yScale: yScale,
                     },
@@ -334,7 +331,7 @@ export class GameStateService {
         );
 
 
-        if (randomTexture === '.media/enable2.png') {
+        if (texture === '.media/enable2.png') {
             Body.setVelocity(asteroid, {
                 x: -0.5,
                 y: serverModel.velocityY,

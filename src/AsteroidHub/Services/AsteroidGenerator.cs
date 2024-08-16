@@ -43,7 +43,8 @@ namespace AsteroidHub.Services
                         (int)verticalPos,
                         horizontalPos,
                         velocityx,
-                        velocityy));
+                        velocityy,
+                        _random.Next(0, 6)));
             }
 
             foreach (var asteroid in asteroids)

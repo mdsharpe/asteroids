@@ -21,6 +21,8 @@ const PLAYER_WIDTH = 10;
 const PLAYER_HEIGHT = 5;
 const PLAYAREA_HEIGHT = 100;
 const PLAYAREA_MINX = -200;
+const PLAYER_MINX = -60;
+const PLAYER_MAXX = 110;
 const PLAYAREA_MAXX = 200;
 
 const PLAYER_VACUUMFRICTION = 0.1;
@@ -199,6 +201,28 @@ export class GameStateService {
                 );
             }
 
+            if (keysDown.has('KeyA')) {
+                Body.applyForce(
+                    player,
+                    {
+                        x: player.position.x,
+                        y: player.position.y,
+                    },
+                    { x: -PLAYER_ACCEL, y: 0 }
+                );
+            }
+
+            if (keysDown.has('KeyD')) {
+                Body.applyForce(
+                    player,
+                    {
+                        x: player.position.x,
+                        y: player.position.y,
+                    },
+                    { x: PLAYER_ACCEL, y: 0 }
+                );
+            }
+
             if (player.position.y < 0) {
                 Body.setPosition(player, { x: player.position.x, y: 0 });
                 Body.setVelocity(player, { x: 0, y: 0 });
@@ -209,6 +233,16 @@ export class GameStateService {
                     x: player.position.x,
                     y: PLAYAREA_HEIGHT - PLAYER_HEIGHT,
                 });
+                Body.setVelocity(player, { x: 0, y: 0 });
+            }
+
+            if (player.position.x < PLAYER_MINX) {
+                Body.setPosition(player, { x: PLAYER_MINX, y: player.position.y });
+                Body.setVelocity(player, { x: 0, y: 0 });
+            }
+
+            if (player.position.x > PLAYER_MAXX) {
+                Body.setPosition(player, { x: PLAYER_MAXX, y: player.position.y });
                 Body.setVelocity(player, { x: 0, y: 0 });
             }
         };

@@ -36,7 +36,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 wireframes: false,
                 hasBounds: true,
                 showStats: true,
-                showDebug: true,
             },
         });
 

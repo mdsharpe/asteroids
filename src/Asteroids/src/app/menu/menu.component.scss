@@ -7,8 +7,12 @@
     height: 100%;
     color: white;
 
+    h2 {
+        margin: 0;
+    }
+
     h1 {
-        text-transform: uppercase;
+        font-size: 3rem;
     }
 
     .menu-container {
@@ -23,9 +27,13 @@
         input {
             text-align: center;
         }
+
+        * {
+            font-size: 1.5rem;
+        }
     }
 }
 
-* {
-    font-family: American Typewriter, serif
+a {
+    text-decoration: none;
 }

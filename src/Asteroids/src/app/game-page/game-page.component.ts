@@ -10,6 +10,7 @@ import {
 import { Render } from 'matter-js';
 
 import { GameStateService } from '../game-state.service';
+import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 
 @Component({
     selector: 'app-game-page',
@@ -27,7 +28,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     @ViewChild('worldContainer', { static: true })
     private _worldContainer!: ElementRef<HTMLElement>;
 
-    public ngOnInit(): void {
+    public async ngOnInit(): Promise<void> {
         this._render = Render.create({
             element: this._worldContainer.nativeElement,
             engine: this._state.engine,
@@ -48,6 +49,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
         Render.run(this._render);
 
         this.fitToScreen();
+
+        await this.initSignalRConnection();
     }
 
     public ngOnDestroy(): void {
@@ -59,6 +62,17 @@ export class GamePageComponent implements OnInit, OnDestroy {
     @HostListener('window:resize', ['$event'])
     public onResize(evt: Event): void {
         this.fitToScreen();
+    }
+
+    private async initSignalRConnection(): Promise<void> {
+        const connection = new HubConnectionBuilder()
+            .withUrl("https://localhost:5127/hub")
+            .configureLogging(LogLevel.Information)
+            .build();
+
+        connection.on('newAsteroid', _ => console.log('new asteroid'));
+
+        connection.start();
     }
 
     private fitToScreen(): void {

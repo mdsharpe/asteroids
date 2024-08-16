@@ -128,5 +128,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         render.bounds.max.x -= padding.x;
         render.bounds.min.y -= padding.y;
         render.bounds.max.y -= padding.y;
+
+        render.options.wireframes = false;
     }
 }

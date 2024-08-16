@@ -1,7 +1,9 @@
 <div>
     <div>Enter your name:</div>
-    <input type="text">
+    <input type="text" [ngModel]="name$ | async" (ngModelChange)="name$.next($event)">
 </div>
+
+<button [disabled]="(canJoin$ | async) === false" (click)="joinGame()">Join game</button>
 
 <!-- Enter your name -->
 <!-- Join game -->

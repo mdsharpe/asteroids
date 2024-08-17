@@ -20,6 +20,7 @@ import {
     HubConnectionBuilder,
     LogLevel,
 } from '@microsoft/signalr';
+import { v4 as uuidv4 } from 'uuid';
 
 const COLLISION_CAT_PARTICLES = 0x0001;
 const COLLISION_CAT_PLAYER = 0x0002;
@@ -63,9 +64,7 @@ export class GameStateService {
             gravity: { x: 0, y: 0 },
         });
 
-        this.runner = Runner.create({
-            isFixed: true,
-        });
+        this.runner = Runner.create();
         Runner.run(this.runner, this.engine);
 
         this._stars = this.initStars();
@@ -83,7 +82,7 @@ export class GameStateService {
             .withUrl(`${environment.signalRBaseUri}/hub`, {
                 skipNegotiation: true,
                 transport: HttpTransportType.WebSockets,
-                withCredentials: false
+                withCredentials: false,
             })
             .withAutomaticReconnect()
             .configureLogging(LogLevel.Information)
@@ -92,13 +91,12 @@ export class GameStateService {
         connection.on('newAsteroid', (asteroid) =>
             this.createAsteroid(asteroid)
         );
+
         connection.on('playerMoved', (player) =>
             this.handleOtherPlayer(player)
         );
 
         connection.start().then(() => {
-            console.log('connectionstate: ', this._hubConnection.state);
-
             //// Simulate locally other players
             this.spawnPlayer();
         });
@@ -391,12 +389,12 @@ export class GameStateService {
         if (randomTexture === '.media/enable2.png') {
             Body.setVelocity(asteroid, {
                 x: -0.5,
-                y: serverModel.velocityY,
+                y: serverModel.velocityy,
             });
         } else {
             Body.setVelocity(asteroid, {
-                x: serverModel.velocityX,
-                y: serverModel.velocityY,
+                x: serverModel.velocityx,
+                y: serverModel.velocityy,
             });
         }
 
@@ -456,16 +454,8 @@ export class GameStateService {
     private spawnPlayer(): void {
         console.log('Spawning');
         this._hubConnection.send('broadcastPlayer', {
-            id: this.generateGuid(),
+            id: uuidv4(),
             yPos: Math.random() * 50,
-        });
-    }
-
-    private generateGuid(): string {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r: number = (Math.random() * 16) | 0;
-            const v: number = c === 'x' ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
         });
     }
 }

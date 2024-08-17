@@ -7,18 +7,11 @@ import {
     OnInit,
     ViewChild,
 } from '@angular/core';
-import { Render } from 'matter-js';
-import {
-    HubConnection,
-    HubConnectionBuilder,
-    LogLevel,
-} from '@microsoft/signalr';
-
-import { GameStateService } from '../game-state.service';
-import { environment } from '../../environments/environment';
-import { AsteroidSignalRModel } from '../models';
 import { CommonModule } from '@angular/common';
 import { distinctUntilChanged, map } from 'rxjs';
+import { Render } from 'matter-js';
+
+import { GameStateService } from '../game-state.service';
 
 @Component({
     selector: 'app-game-page',
@@ -28,29 +21,7 @@ import { distinctUntilChanged, map } from 'rxjs';
     styleUrl: './game-page.component.scss',
 })
 export class GamePageComponent implements OnInit, OnDestroy {
-    constructor() {
-        const connection = new HubConnectionBuilder()
-            .withUrl(`${environment.signalRBaseUri}/hub`)
-            .configureLogging(LogLevel.Information)
-            .build();
-
-        connection.on('newAsteroid', (asteroid) => this._state.createAsteroid(asteroid));
-        connection.on('playerMoved', (player) =>
-            this._state.handleOtherPlayer(player)
-        );
-
-        connection.start().then(() => {
-            console.log("connectionstate: ", this._hubConnection.state);
-
-            // Simulate locallyu other players
-            //// this.spawnPlayer();
-        });
-
-        this._hubConnection = connection;
-    }
-
     private readonly _state = inject(GameStateService);
-    private _hubConnection: HubConnection;
 
     private _render: Matter.Render | null = null;
 
@@ -154,21 +125,5 @@ export class GamePageComponent implements OnInit, OnDestroy {
         render.bounds.max.x -= padding.x;
         render.bounds.min.y -= padding.y;
         render.bounds.max.y -= padding.y;
-    }
-
-    private spawnPlayer(): void {
-        console.log("Spawning");
-        this._hubConnection.send('broadcastPlayer', {
-            id: this.generateGuid(),
-            yPos: Math.random() * 5
-        });
-    }
-
-    private generateGuid(): string {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r: number = (Math.random() * 16) | 0;
-            const v: number = c === 'x' ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-        });
     }
 }

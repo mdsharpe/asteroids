@@ -13,11 +13,11 @@ public class AsteroidGenerator(IHubContext<AsteroidGameHub> hub) : BackgroundSer
         while (!stoppingToken.IsCancellationRequested)
         {
             var delay = Task.Delay(Interval, stoppingToken);
-            var processing = GenerateAsteroid(stoppingToken);
+            var generateAsteroid = GenerateAsteroid(stoppingToken);
 
             try
             {
-                await Task.WhenAll(processing, delay);
+                await Task.WhenAll(generateAsteroid, delay);
             }
             catch (TaskCanceledException)
             {
@@ -27,16 +27,11 @@ public class AsteroidGenerator(IHubContext<AsteroidGameHub> hub) : BackgroundSer
 
     private async Task GenerateAsteroid(CancellationToken stoppingToken)
     {
-        var verticalPos = _rng.NextDouble() * 100;
-        var horizontalPos = 150;
-        var velocityx = _rng.NextDouble() * -1 - 1;
-        var velocityy = _rng.NextDouble() - 0.5D;
-
         var asteroid = new Asteroid(
-            verticalPos,
-            horizontalPos,
-            velocityx,
-            velocityy,
+            _rng.NextDouble() * 100,
+            150,
+            _rng.NextDouble() * -1 - 1,
+            _rng.NextDouble() - 0.5D,
             _rng.Next(0, 6));
 
         await hub.Clients.All.SendAsync("newAsteroid", asteroid, stoppingToken);

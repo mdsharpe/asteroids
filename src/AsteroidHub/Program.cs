@@ -1,5 +1,4 @@
 using AsteroidHub;
-using AsteroidHub.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

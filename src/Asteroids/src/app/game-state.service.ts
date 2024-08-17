@@ -81,10 +81,11 @@ export class GameStateService {
 
         const connection = new HubConnectionBuilder()
             .withUrl(`${environment.signalRBaseUri}/hub`, {
-                skipNegotiation: false,
+                skipNegotiation: true,
                 transport: HttpTransportType.WebSockets,
                 withCredentials: false
             })
+            .withAutomaticReconnect()
             .configureLogging(LogLevel.Information)
             .build();
 

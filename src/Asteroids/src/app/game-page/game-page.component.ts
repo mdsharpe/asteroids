@@ -1,5 +1,6 @@
 import {
     Component,
+    DestroyRef,
     ElementRef,
     HostListener,
     inject,
@@ -12,6 +13,9 @@ import { distinctUntilChanged, map } from 'rxjs';
 import { Render } from 'matter-js';
 
 import { GameStateService } from '../game-state.service';
+import { Router } from '@angular/router';
+import { HubConnectionState } from '@microsoft/signalr';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
     selector: 'app-game-page',
@@ -22,11 +26,12 @@ import { GameStateService } from '../game-state.service';
 })
 export class GamePageComponent implements OnInit, OnDestroy {
     private readonly _state = inject(GameStateService);
+    private readonly _router = inject(Router);
+    private readonly _destroyRef = inject(DestroyRef);
 
     private _render: Matter.Render | null = null;
 
-    public readonly showingRestartButton$ = this._state.playerAlive$
-    .pipe(
+    public readonly showingRestartButton$ = this._state.playerAlive$.pipe(
         map((isAlive) => !isAlive),
         distinctUntilChanged()
     );
@@ -50,12 +55,16 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.fitToScreen();
 
         this._state.startLocalPlayer();
+
+        this.redirectOnDisconnected();
     }
 
     public ngOnDestroy(): void {
         if (this._render) {
             Render.stop(this._render);
         }
+
+        this._state.stopLocalPlayer();
     }
 
     public onRestartClick(): void {
@@ -125,5 +134,23 @@ export class GamePageComponent implements OnInit, OnDestroy {
         render.bounds.max.x -= padding.x;
         render.bounds.min.y -= padding.y;
         render.bounds.max.y -= padding.y;
+    }
+
+    private redirectOnDisconnected() {
+        const redirectIfDisconnected = (
+            connectionState: HubConnectionState
+        ) => {
+            if (connectionState !== HubConnectionState.Connected) {
+                this._router.navigate(['/']);
+            }
+        };
+
+        this._state.hubConnectionState$
+            .pipe(takeUntilDestroyed(this._destroyRef))
+            .subscribe((connectionState) => {
+                redirectIfDisconnected(connectionState);
+            });
+
+        redirectIfDisconnected(this._state.hubConnectionState);
     }
 }

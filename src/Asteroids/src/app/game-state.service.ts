@@ -11,13 +11,14 @@ import {
     Vector,
     World,
 } from 'matter-js';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { GamePhase } from './game-phase';
 import { environment } from '../environments/environment';
 import {
     HttpTransportType,
     HubConnection,
     HubConnectionBuilder,
+    HubConnectionState,
     LogLevel,
 } from '@microsoft/signalr';
 import { v4 as uuidv4 } from 'uuid';
@@ -48,16 +49,22 @@ const STAR_DEPTH_MAX = 7;
 
 @Injectable()
 export class GameStateService {
+    private readonly _playerAlive$ = new BehaviorSubject<boolean>(false);
+    private readonly _hubConnectionState$ =
+        new BehaviorSubject<HubConnectionState>(
+            HubConnectionState.Disconnected
+        );
+    private readonly otherPlayers: Map<string, Body>;
+    private readonly _stars: Set<Body>;
+    private readonly _hubConnection: HubConnection;
+
     public readonly engine: Engine;
     public readonly runner: Runner;
     public readonly player: Body;
-    private readonly _playerAlive$ = new BehaviorSubject<boolean>(false);
-    private readonly otherPlayers: Map<string, Body>;
-    private readonly _stars: Set<Body>;
-
     public readonly playerAlive$ = this._playerAlive$.asObservable();
-
     public readonly gamePhase$ = new BehaviorSubject<GamePhase>(GamePhase.none);
+    public readonly hubConnectionState$ =
+        this._hubConnectionState$.asObservable();
 
     constructor() {
         this.engine = Engine.create({
@@ -72,36 +79,47 @@ export class GameStateService {
         this.initControls();
         this.initCollisionDetection();
 
-        window.setInterval(() => {
-            this.cleanup();
-        }, 1000);
-
         this.otherPlayers = new Map<string, Body>();
 
-        const connection = new HubConnectionBuilder()
+        this._hubConnection = new HubConnectionBuilder()
             .withUrl(`${environment.signalRBaseUri}/hub`, {
-                skipNegotiation: true,
                 transport: HttpTransportType.WebSockets,
+                skipNegotiation: true,
                 withCredentials: false,
             })
-            .withAutomaticReconnect()
+            .withAutomaticReconnect({
+                nextRetryDelayInMilliseconds: () => 2000,
+            })
             .configureLogging(LogLevel.Information)
             .build();
 
-        connection.on('newAsteroid', (asteroid) =>
+        this._hubConnection.onclose(() => {
+            this._hubConnectionState$.next(HubConnectionState.Disconnected);
+        });
+        this._hubConnection.onreconnecting(() => {
+            this._hubConnectionState$.next(HubConnectionState.Reconnecting);
+        });
+        this._hubConnection.onreconnected(() => {
+            this._hubConnectionState$.next(HubConnectionState.Connected);
+        });
+
+        this._hubConnection.on('newAsteroid', (asteroid) =>
             this.createAsteroid(asteroid)
         );
 
-        connection.on('playerMoved', (player) =>
+        this._hubConnection.on('playerMoved', (player) =>
             this.handleOtherPlayer(player)
         );
 
-        connection.start().then(() => {
-            //// Simulate locally other players
-            this.spawnPlayer();
-        });
+        this.startConnection();
 
-        this._hubConnection = connection;
+        window.setInterval(() => {
+            this.cleanup();
+        }, 1000);
+    }
+
+    public get hubConnectionState(): HubConnectionState {
+        return this._hubConnection.state;
     }
 
     public startLocalPlayer(): void {
@@ -109,7 +127,9 @@ export class GameStateService {
         this._playerAlive$.next(true);
     }
 
-    private _hubConnection: HubConnection;
+    stopLocalPlayer() {
+        this._playerAlive$.next(false);
+    }
 
     private initPlayer(isOtherPlayer: boolean): Body {
         const collisionFilter: ICollisionFilter = isOtherPlayer
@@ -449,6 +469,25 @@ export class GameStateService {
                 }
             }
         });
+    }
+
+    private startConnection(): void {
+        let start: () => void;
+
+        start = () => {
+            this._hubConnection.start().then(
+                () => {
+                    this._hubConnectionState$.next(
+                        HubConnectionState.Connected
+                    );
+                },
+                () => {
+                    start();
+                }
+            );
+        };
+
+        start();
     }
 
     private spawnPlayer(): void {

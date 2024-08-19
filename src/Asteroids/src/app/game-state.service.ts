@@ -113,6 +113,10 @@ export class GameStateService {
             this.handleOtherPlayer(player)
         );
 
+        this._hubConnection.on('playerDead', (player) =>
+            this.handleOtherPlayerDead(player)
+        );
+
         this.startConnection();
 
         window.setInterval(() => {
@@ -173,6 +177,11 @@ export class GameStateService {
                 Body.setAngularSpeed(player, 0);
             } else {
                 player.frictionAir = PLAYER_VACUUMFRICTION_DEAD;
+                if (this._hubConnection?.state === 'Connected') {
+                    this._hubConnection.send('broadcastPlayerDead', {
+                        id: this.playerId,
+                    });
+                }
             }
         });
 
@@ -228,6 +237,14 @@ export class GameStateService {
                 const player = this.initPlayer(true);
                 this.otherPlayers.set(otherPlayer.id, player);
                 console.log('add player: ', otherPlayer.id);
+            }
+        }
+    }
+
+    public handleOtherPlayerDead(otherPlayerId: string) {
+        if (otherPlayerId != this.playerId) {
+            if (this.otherPlayers.has(otherPlayerId)) {
+                this.addExplosion(this.otherPlayers.get(otherPlayerId)!);
             }
         }
     }
@@ -353,7 +370,7 @@ export class GameStateService {
                 this._playerAlive$.next(false);
 
                 window.setTimeout(() => {
-                    this.addExplosion(this.player.position);
+                    this.addExplosion(this.player);
                 }, 0.25);
             }
         };
@@ -424,11 +441,11 @@ export class GameStateService {
         Composite.add(this.engine.world, [asteroid]);
     }
 
-    private addExplosion(position: Vector): void {
+    private addExplosion(player: Body): void {
         const explosionColors = ['red', 'orange', 'white', 'grey'];
 
         for (let i = 0; i < 50; i++) {
-            const explosion = Bodies.circle(position.x, position.y, 0.25, {
+            const explosion = Bodies.circle(player.position.x, player.position.y, 0.25, {
                 frictionAir: 0,
                 collisionFilter: {
                     category: COLLISION_CAT_PARTICLES,
@@ -449,7 +466,7 @@ export class GameStateService {
                         x: (Math.random() - 0.5) * 0.5,
                         y: (Math.random() - 0.5) * 0.5,
                     },
-                    this.player.velocity
+                    player.velocity
                 )
             );
 

@@ -7,6 +7,6 @@ public class AsteroidGameHub : Hub
     public async Task BroadcastPlayer(Player player)
         => await Clients.All.SendAsync("playerMoved", player);
 
-    public async Task PlayerDead(Guid playerId)
-        => await Clients.All.SendAsync("playerDead", playerId);
+    public async Task BroadcastPlayerDead(PlayerId playerId)
+        => await Clients.All.SendAsync("playerDead", playerId.Id);
 }

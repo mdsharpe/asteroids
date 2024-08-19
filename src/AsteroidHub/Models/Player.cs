@@ -4,6 +4,7 @@
     {
         public Guid Id { get; set; }
         public decimal YPos { get; set; }
+        public decimal XPos { get; set; }
         public decimal? VelocityY { get; set; }
         public decimal? VelocityX { get; set; }
     }

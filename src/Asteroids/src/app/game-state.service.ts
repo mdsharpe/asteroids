@@ -61,6 +61,7 @@ export class GameStateService {
     public readonly engine: Engine;
     public readonly runner: Runner;
     public readonly player: Body;
+    public readonly playerId: string;
     public readonly playerAlive$ = this._playerAlive$.asObservable();
     public readonly gamePhase$ = new BehaviorSubject<GamePhase>(GamePhase.none);
     public readonly hubConnectionState$ =
@@ -76,6 +77,7 @@ export class GameStateService {
 
         this._stars = this.initStars();
         this.player = this.initPlayer(false);
+        this.playerId = uuidv4();
         this.initControls();
         this.initCollisionDetection();
 
@@ -217,8 +219,7 @@ export class GameStateService {
     }
 
     public handleOtherPlayer(otherPlayer: any) {
-        console.log('handle: ', otherPlayer);
-        if (otherPlayer.id != this.player.id) {
+        if (otherPlayer.id != this.playerId) {
             if (this.otherPlayers.has(otherPlayer.id)) {
                 let existingPlayer = this.otherPlayers.get(otherPlayer.id);
                 existingPlayer!.position.y = otherPlayer.yPos;
@@ -318,7 +319,7 @@ export class GameStateService {
 
             if (this._hubConnection.state === 'Connected') {
                 this._hubConnection.send('broadcastPlayer', {
-                    id: this.player.id,
+                    id: this.playerId,
                     yPos: this.player.position.y,
                     xPos: this.player.position.x,
                 });
@@ -495,6 +496,7 @@ export class GameStateService {
         this._hubConnection.send('broadcastPlayer', {
             id: uuidv4(),
             yPos: Math.random() * 50,
+            xPos: Math.random() * 50,
         });
     }
 }

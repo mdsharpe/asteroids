@@ -12,7 +12,8 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins(
                 "http://localhost:4200",
-                "https://delightful-hill-0a63cb603.5.azurestaticapps.net/")
+                "https://delightful-hill-0a63cb603.5.azurestaticapps.net/",
+                "https://asteroids.mdsharpe.com")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();

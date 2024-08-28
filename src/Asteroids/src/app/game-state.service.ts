@@ -385,8 +385,6 @@ export class GameStateService {
             './media/asteroid3.svg',
             './media/asteroid4.svg',
             './media/asteroid5.svg',
-            './media/enable1.png',
-            './media/enable2.png',
         ];
         const randomTexture =
             asteroidTextures[
@@ -396,14 +394,6 @@ export class GameStateService {
         // Set default scales
         let xScale = 0.1;
         let yScale = 0.1;
-
-        if (
-            randomTexture === './media/enable1.png' ||
-            randomTexture === './media/enable2.png'
-        ) {
-            xScale = 0.015;
-            yScale = 0.015;
-        }
 
         const asteroid = Bodies.circle(
             serverModel.horizontalPos,

@@ -14,16 +14,18 @@ public class AsteroidGenerator(IHubContext<AsteroidGameHub> hub) : BackgroundSer
         {
             var delay = Task.Delay(Interval, stoppingToken);
             var generateAsteroid = GenerateAsteroid(stoppingToken);
+            var broadcastScores = BroadcastScores(stoppingToken);
 
             try
             {
-                await Task.WhenAll(generateAsteroid, delay);
+                await Task.WhenAll(generateAsteroid, broadcastScores, delay);
             }
             catch (TaskCanceledException)
             {
             }
         }
     }
+
 
     private async Task GenerateAsteroid(CancellationToken stoppingToken)
     {
@@ -35,5 +37,11 @@ public class AsteroidGenerator(IHubContext<AsteroidGameHub> hub) : BackgroundSer
             _rng.Next(0, 6));
 
         await hub.Clients.All.SendAsync("newAsteroid", asteroid, stoppingToken);
+    }
+
+    private async Task BroadcastScores(CancellationToken stoppingToken)
+    {
+        var scores = Scoreboard.Scores.Select(o => o.Value).ToArray();
+        await hub.Clients.All.SendAsync("scores", scores, stoppingToken);
     }
 }

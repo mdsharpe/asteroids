@@ -4,3 +4,8 @@ export type AsteroidSignalRModel = {
     velocityX: number;
     velocityY: number;
 }
+
+export interface Score {
+    name: string;
+    score: number;
+}

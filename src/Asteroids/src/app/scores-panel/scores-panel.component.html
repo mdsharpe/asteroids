@@ -1,0 +1,5 @@
+<ol>
+    <li *ngFor="let score of scoreboard$ | async">
+        {{ score.name }}: {{ score.score }}
+    </li>
+</ol>

@@ -16,11 +16,12 @@ import { GameStateService } from '../game-state.service';
 import { Router } from '@angular/router';
 import { HubConnectionState } from '@microsoft/signalr';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ScoresPanelComponent } from '../scores-panel/scores-panel.component';
 
 @Component({
     selector: 'app-game-page',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, ScoresPanelComponent],
     templateUrl: './game-page.component.html',
     styleUrl: './game-page.component.scss',
 })

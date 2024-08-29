@@ -22,6 +22,7 @@ import {
     LogLevel,
 } from '@microsoft/signalr';
 import { v4 as uuidv4 } from 'uuid';
+import { Score } from './models';
 
 const COLLISION_CAT_PARTICLES = 0x0001;
 const COLLISION_CAT_PLAYER = 0x0002;
@@ -57,6 +58,10 @@ export class GameStateService {
     private readonly otherPlayers: Map<string, Body>;
     private readonly _stars: Set<Body>;
     private readonly _hubConnection: HubConnection;
+    private readonly _scoreboard$ = new BehaviorSubject<Score[]>([
+        { name: 'foo', score: 123 },
+        { name: 'bar', score: 456 }
+    ]);
 
     public readonly engine: Engine;
     public readonly runner: Runner;
@@ -66,6 +71,7 @@ export class GameStateService {
     public readonly gamePhase$ = new BehaviorSubject<GamePhase>(GamePhase.none);
     public readonly hubConnectionState$ =
         this._hubConnectionState$.asObservable();
+    public readonly scoreboard$ = this._scoreboard$.asObservable();
 
     constructor() {
         this.engine = Engine.create({
@@ -117,6 +123,10 @@ export class GameStateService {
             this.handleOtherPlayerDead(player)
         );
 
+        this._hubConnection.on('scores', (scores: Score[]) => {
+            this._scoreboard$.next(scores);
+        });
+
         this.startConnection();
 
         window.setInterval(() => {
@@ -140,9 +150,9 @@ export class GameStateService {
     private initPlayer(isOtherPlayer: boolean): Body {
         const collisionFilter: ICollisionFilter = isOtherPlayer
             ? {
-                  category: COLLISION_CAT_OTHERPLAYER,
-                  mask: 0,
-              }
+                category: COLLISION_CAT_OTHERPLAYER,
+                mask: 0,
+            }
             : { category: COLLISION_CAT_PLAYER };
 
         var player = Bodies.rectangle(
@@ -388,7 +398,7 @@ export class GameStateService {
         ];
         const randomTexture =
             asteroidTextures[
-                Math.floor(Math.random() * asteroidTextures.length)
+            Math.floor(Math.random() * asteroidTextures.length)
             ];
 
         // Set default scales
@@ -444,7 +454,7 @@ export class GameStateService {
                 render: {
                     fillStyle:
                         explosionColors[
-                            Math.floor(Math.random() * explosionColors.length)
+                        Math.floor(Math.random() * explosionColors.length)
                         ],
                 },
             });
